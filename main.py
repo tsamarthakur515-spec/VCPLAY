@@ -144,7 +144,7 @@ async def play(client, message):
 
     song = results[0]
 
-    # Get vlink (MP3) instead of media_url
+    # Use vlink (MP3) for streaming
     stream_url = song.get("vlink")
     title = song.get("song", "Unknown")
     artist = song.get("primary_artists", "Unknown")
@@ -153,26 +153,18 @@ async def play(client, message):
     if not stream_url:
         return await status_msg.edit("❌ No playable link found!")
 
-    # FFmpeg options to avoid freezing
-    ffmpeg_opts = [
-        "-reconnect", "1",
-        "-reconnect_streamed", "1",
-        "-reconnect_delay_max", "5",
-        "-vn"  # ignore video
-    ]
-
-    # Play in VC
+    # Join VC or change stream
     try:
         await call.join_group_call(
             message.chat.id,
-            AudioPiped(stream_url, HighQualityAudio(ffmpeg_parameters=ffmpeg_opts)),
+            AudioPiped(stream_url, HighQualityAudio()),
             muted=False
         )
     except Exception:
         try:
             await call.change_stream(
                 message.chat.id,
-                AudioPiped(stream_url, HighQualityAudio(ffmpeg_parameters=ffmpeg_opts))
+                AudioPiped(stream_url, HighQualityAudio())
             )
         except Exception as e:
             return await status_msg.edit(f"⚠️ Could not play in VC: {e}")

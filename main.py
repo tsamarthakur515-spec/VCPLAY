@@ -65,13 +65,12 @@ async def ping(client, message):
     # Final formatted message
     final_msg = (
         f"❏ ╰☞ 😈 {fullname} 😈\n"
-        f"├• ╰☞ 𝐒ᴘᴇᴇᴅ: {ping_ms} ms\n"
-        f"├• ╰☞ 𝐔ᴘᴛɪᴍᴇ: {uptime}\n"
-        f"├• ╰☞ 💻 CPU: {cpu_percent}%\n"
-        f"├• ╰☞ 🎵 PyTgCalls: {pytgcalls_status}\n"
-        f"└• ╰☞ API by: [JioSaavn](https://flip-saavn.vercel.app/)"
-    )
-
+        f"├• ╰☞ sᴘᴇᴇᴅ: {ping_ms} ms\n"
+        f"├• ╰☞ ᴜᴘᴛɪᴍᴇ: {uptime}\n"
+        f"├• ╰☞ ᴄᴘᴜ: {cpu_percent}%\n"
+        f"├• ╰☞ ᴘʏᴛɢᴄᴀʟʟs: {pytgcalls_status}\n"
+        f"└• ╰☞ ᴀᴘɪ ʙʏ: <a href='https://t.me/sxyaru>ᴀʀᴜ x ᴀᴘɪ ʙᴏᴛs</a>"
+)
     await loading.edit(final_msg)
 # ----------------- PLAY COMMAND -----------------
 @app.on_message(filters.command("play", "."))

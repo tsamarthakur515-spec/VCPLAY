@@ -11,8 +11,7 @@ from pytgcalls.types.input_stream.quality import HighQualityAudio
 # ------------------- CONFIG -------------------
 API_ID = 33603336
 API_HASH = "c9683a8ec3b886c18219f650fc8ed429"
-SESSION = "BQIAvwgAtGpTYJxvUNp8rbi2VNdfNGw-foSWWvDtrWSVnLbKeor1FcHdS2DO3WAwKRUHYT9NyJGuBAIjd9cYSh0JGW7SZjxsMTs0xEWFeU7dxKhHatLzbjhIA8kUOxWj2chH_ags_7fIToe7_LFolcHFbdJhCKAuStVEV4bUXvn43vmALgKi87JQHAId5p9xB7atUNHxMebmAOq6JqABdoBCdtUJC7tEov8GBF0a1C4r8WE8wKoSp5vDjcu7mRIJrUcQ17LMHYY6ACErur_iH3zN2Ny7Nd3VYyIu7Fk7VfeErEZlw-EoNvB89m_e_KYWE3E6ITu-vAtHeTAMG_cDo771-c7GAwAAAAIAgPwVAA"
-  # replace with your session
+SESSION = "BQE-4i0ASxu8TXk4s870tFMn-D2Ijs-7DaTep8qcmRnZuowGYTiKDzzy9fKRT3pCc7aFI9oql0Rp5k1FkymDhRbewYPN11p5G7exMCs-z2bdMPuRoJCF60r7p_xq0TBjtLw5P1f-pXHHRxeXSAq0nKyNglv2pZ-GVCbYL4J-OwIkfck4wZyfiU0H58LZla5Il4VmVww-ewK3roa4mVjIxGKYoFva7LqYEf9Iti77jLz7HW7gCfuNessLDXqH1se4DuOSmoJzbacJxofENDQJChGjP4K7gbkMQQKwjCQfndvTmHLyDnc5jDqwfngZK1ogepmyiXZhhzHVebIieznK4DXTM1Q7pAAAAAHKarFXAA"
 # ----------------------------------------------
 
 app = Client("vcbot", api_id=API_ID, api_hash=API_HASH, session_string=SESSION)
@@ -31,10 +30,10 @@ BOT_START_TIME = datetime.now()  # Set at bot startup
     # Loading bar animation
     loading = await message.reply("0% ▒▒▒▒▒▒▒▒▒▒")
     stages = [
-        ("20% ███▒▒▒▒▒▒▒ sᴀᴍᴀʀ", 0.08),
-        ("40% █████▒▒▒▒ sᴀᴍᴀʀ ɪs", 0.08),
-        ("60% ███████▒▒ sᴀᴍᴀʀ ᴄᴏᴍᴇ", 0.09),
-        ("80% █████████▒ sᴀᴍᴀʀ", 0.09),
+        ("20% ███▒▒▒▒▒▒▒ ᴀʀᴜ", 0.08),
+        ("40% █████▒▒▒▒ ᴀʀᴜ ɪs", 0.08),
+        ("60% ███████▒▒ ᴀʀᴜ ᴄᴏᴍᴇ", 0.09),
+        ("80% █████████▒ ᴀʀᴜ", 0.09),
         ("100% ██████████ ᴄᴏᴍɪɴɢ", 0.10),
     ]
 
@@ -63,7 +62,7 @@ BOT_START_TIME = datetime.now()  # Set at bot startup
 
     # Final formatted message
     final_msg = (
-        "❏ ╰☞ 😈 sᴀᴍᴀʀ 😈\n"
+        f"❏ ╰☞ 😈 {message.from_user.first_name} 😈\n"
         f"├• ╰☞ 𝐒ᴘᴇᴇᴅ: {ping_ms} ms\n"
         f"├• ╰☞ 𝐔ᴘᴛɪᴍᴇ: {uptime}\n"
         f"├• ╰☞ 💻 CPU: {cpu_percent}%\n"

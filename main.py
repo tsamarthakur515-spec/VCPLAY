@@ -1,5 +1,6 @@
-
-
+import time
+import psutil
+from datetime import datetime, timedelta
 import asyncio
 import aiohttp
 from pyrogram import Client, filters
@@ -18,6 +19,59 @@ app = Client("vcbot", api_id=API_ID, api_hash=API_HASH, session_string=SESSION)
 call = PyTgCalls(app)
 
 # ----------------- COMMANDS ------------------
+
+#PINH COMMAND
+
+
+@app.on_message(filters.command("ping", "."))
+async def ping(client, message):
+    start = time.monotonic()
+BOT_START_TIME = datetime.now()  # Set at bot startup
+  
+    # Loading bar animation
+    loading = await message.reply("0% ▒▒▒▒▒▒▒▒▒▒")
+    stages = [
+        ("20% ███▒▒▒▒▒▒▒ sᴀᴍᴀʀ", 0.08),
+        ("40% █████▒▒▒▒ sᴀᴍᴀʀ ɪs", 0.08),
+        ("60% ███████▒▒ sᴀᴍᴀʀ ᴄᴏᴍᴇ", 0.09),
+        ("80% █████████▒ sᴀᴍᴀʀ", 0.09),
+        ("100% ██████████ ᴄᴏᴍɪɴɢ", 0.10),
+    ]
+
+    for text, delay in stages:
+        await asyncio.sleep(delay)
+        await loading.edit(text)
+
+    # Calculate ping and uptime
+    end = time.monotonic()
+    ping_ms = round((end - start) * 1000, 1)
+    uptime_sec = int((datetime.now() - BOT_START_TIME).total_seconds())
+    uptime = str(timedelta(seconds=uptime_sec)).split('.')[0]
+
+    # CPU usage
+    cpu_percent = psutil.cpu_percent(interval=0.5)
+
+    # PyTgCalls status
+    try:
+        pytgcalls_status = "🟢 Active" if call.is_connected else "🔴 Not active"
+    except:
+        pytgcalls_status = "⚠️ Unknown"
+
+    # Bot user info
+    me = await client.get_me()
+    fullname = f"{me.first_name or ''} {me.last_name or ''}".strip() or me.username or "User"
+
+    # Final formatted message
+    final_msg = (
+        "❏ ╰☞ 😈 sᴀᴍᴀʀ 😈\n"
+        f"├• ╰☞ 𝐒ᴘᴇᴇᴅ: {ping_ms} ms\n"
+        f"├• ╰☞ 𝐔ᴘᴛɪᴍᴇ: {uptime}\n"
+        f"├• ╰☞ 💻 CPU: {cpu_percent}%\n"
+        f"├• ╰☞ 🎵 PyTgCalls: {pytgcalls_status}\n"
+        f"└• ╰☞ API by: [JioSaavn](https://flip-saavn.vercel.app/)"
+    )
+
+    await loading.edit(final_msg)
 
 # ----------------- PLAY COMMAND -----------------
 @app.on_message(filters.command("play", "."))

@@ -145,7 +145,7 @@ async def play(client, message):
     song = results[0]
 
     # Use direct playable URL
-    stream_url = song.get("vlink")  # MUST use vlink
+    stream_url = song.get("media_url")  # MUST use vlink
     if not stream_url:
         return await status_msg.edit("❌ No playable link found!")
 

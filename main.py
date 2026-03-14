@@ -19,10 +19,13 @@ call = PyTgCalls(app)
 
 # ----------------- COMMANDS ------------------
 
+# ----------------- PLAY COMMAND -----------------
 @app.on_message(filters.command("play", "."))
 async def play(client, message):
     if len(message.command) < 2:
-        return await message.reply("❌ Please provide a song name.\nExample: `.play Sabrina Carpenter`")
+        return await message.reply(
+            "❌ Please provide a song name.\nExample: `.play Sabrina Carpenter`"
+        )
 
     query = message.text.split(None, 1)[1]
     await message.reply("🔎 Searching Saavn...")
@@ -44,6 +47,7 @@ async def play(client, message):
     stream_url = song["download"].get("320kbps") or song["download"].get("160kbps")
     title = song.get("title")
     artist = song.get("artist")
+    duration = song.get("duration")  # duration from API if available
 
     if not stream_url:
         return await message.reply("❌ No playable link found!")
@@ -63,69 +67,49 @@ async def play(client, message):
         except Exception as e2:
             return await message.reply(f"⚠️ Could not play in VC: {e2}")
 
-    await message.reply(f"▶️ Playing: {title} — {artist}")
+    await message.reply(
+        f"▶️ Playing: {title} — {artist}\n"
+        f"⏱ Duration: {duration or 'Unknown'}\n"
+        f"🎵 Requested by: {message.from_user.first_name}\n"
+        f"🔗 Music based on: [Flip-Saavn]({url})"
+    )
 
-#REPLY TO FILE PLAY
-@app.on_message(filters.command("rfplay", ".") & filters.me)
+
+# ----------------- REPLY TO AUDIO FILE PLAY -----------------
+@app.on_message(filters.command("rfplay", "."))
 async def rfplay_music(_, message):
-
     chat_id = message.chat.id
 
-    # REPLY AUDIO
+    # Check if replied to an audio/voice
     if message.reply_to_message:
-
         audio = message.reply_to_message.audio or message.reply_to_message.voice
-
         if not audio:
             return await message.reply("❌ Reply to an audio file")
 
+        # Download the file
         file = await message.reply_to_message.download()
 
         try:
-            await call.change_stream(
-                chat_id,
-                AudioPiped(file, HighQualityAudio())
-            )
+            # Try changing stream if already in VC
+            await call.change_stream(chat_id, AudioPiped(file, HighQualityAudio()))
         except:
-            await call.join_group_call(
-                chat_id,
-                AudioPiped(file, HighQualityAudio())
-            )
+            # Else join VC and play
+            await call.join_group_call(chat_id, AudioPiped(file, HighQualityAudio()))
 
-        return await message.reply("🎵 Playing replied audio")
+        duration = None
+        if audio.duration:
+            mins, secs = divmod(audio.duration, 60)
+            duration = f"{mins}:{secs:02d}"
 
-
-    # YOUTUBE / SEARCH
-    if len(message.command) < 2:
-        return await message.reply("Usage: `.play song name or url`")
-
-    query = message.text.split(None, 1)[1]
-
-    ydl_opts = {
-        "format": "bestaudio",
-        "quiet": True
-    }
-
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(f"ytsearch:{query}", download=False)["entries"][0]
-
-    url = info["url"]
-    title = info["title"]
-
-    try:
-        await call.change_stream(
-            chat_id,
-            AudioPiped(url, HighQualityAudio())
+        await message.reply(
+            f"🎵 Playing replied audio\n"
+            f"⏱ Duration: {duration or 'Unknown'}\n"
+            f"🎵 Requested by: {message.from_user.first_name}\n"
+            f"🔗 Music based on: [Local File]"
         )
-
-    except:
-        await call.join_group_call(
-            chat_id,
-            AudioPiped(url, HighQualityAudio())
-        )
-
-    await message.reply(f"🎵 Playing: {title}")
-
+        return
+    else:
+        return await message.reply("❌ Please reply to an audio or voice message to play it.")
 
 @app.on_message(filters.command("stop", "."))
 async def stop(client, message):

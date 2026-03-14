@@ -77,7 +77,7 @@ async def ping(client, message):
         f"├⏱ **Uptime:** `{uptime}`\n"
         f"├💻 **CPU:** `{cpu}%`\n"
         f"├🎧 **VC:** {vc_status}\n"
-        f"╰🔗 **API:** [Aru x API Bots](https://t.me/sxyaru)"
+        f"╰🔗 **API:** [Aru x API Bots](t.me.sxyaru)"
     )
 
     await msg.edit(text, disable_web_page_preview=True)
@@ -87,36 +87,36 @@ async def ping(client, message):
 
 @app.on_message(filters.command("play", "."))
 async def play(client, message):
+
     try:
         await message.delete()
     except:
         pass
+
+    # Check query
     if len(message.command) < 2:
         return await message.reply_text(
-            "```ɢɪᴠᴇ ǫᴜᴇʀʏ ᴛᴏ sᴇᴀʀᴄʜ ʙᴀʙᴇ\n.play <song name>```",
+            "Give song name\n\n.play <song name>",
             quote=True
         )
 
-    query = message.text.split(None, 1)[1]
+    query = " ".join(message.command[1:])
 
     searching = await message.reply_text(
-        "```🥀 sᴇᴀʀᴄʜɪɴɢ ʏᴏᴜʀ ǫᴜᴇʀʏ...```",
+        "🔎 Searching song...",
         quote=True
     )
 
-    query_encoded = quote(query)
-
     try:
         async with aiohttp.ClientSession() as session:
-            url = f"https://flip-saavn.vercel.app/search?query={query_encoded}"
+            url = f"https://flip-saavn.vercel.app/search?query={quote(query)}"
             async with session.get(url) as resp:
                 data = await resp.json()
     except Exception as e:
-        return await searching.edit_text(
-            f"⚠️ API Error:\n{e}"
-        )
+        return await searching.edit_text(f"API Error: {e}")
 
     results = data.get("results")
+
     if not results:
         return await searching.edit_text("❌ No results found!")
 
@@ -133,7 +133,7 @@ async def play(client, message):
     duration = song.get("duration", "Unknown")
 
     if not stream_url:
-        return await searching.edit_text("❌ No playable link found!")
+        return await searching.edit_text("❌ No playable link")
 
     try:
         await call.join_group_call(
@@ -147,16 +147,14 @@ async def play(client, message):
                 AudioPiped(stream_url, HighQualityAudio())
             )
         except Exception as e:
-            return await searching.edit_text(
-                f"⚠️ Could not play in VC:\n{e}"
-            )
+            return await searching.edit_text(f"VC Error: {e}")
 
     await searching.edit_text(
-        f"▶️ <b>ᴘʟᴀʏɪɴɢ:</b> {title} — {artist}\n"
-        f"⏱ <b>ᴅᴜʀᴀᴛɪᴏɴ:</b> {duration}\n"
-        f"🎵 <b>ʀᴇǫᴜᴇsᴛᴇᴅ ʙʏ:</b> {message.from_user.first_name}\n"
-        f"🔗 <b>ᴍᴜsɪᴄ ʙᴀsᴇᴅ ᴏɴ:</b> "
-        f"<a href='https://t.me/sxyaru'>ᴀʀᴜ x ᴀᴘɪ ʙᴏᴛs</a>",
+        f"▶️ <b>Playing</b>\n\n"
+        f"🎵 {title}\n"
+        f"👤 {artist}\n"
+        f"⏱ {duration}\n\n"
+        f"Requested by: {message.from_user.first_name}",
         parse_mode="html"
     )
 

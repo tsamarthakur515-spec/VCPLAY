@@ -128,7 +128,7 @@ async def play(client, message):
 
     try:
         async with aiohttp.ClientSession() as session:
-            url = f"https://flip-saavn.vercel.app/search?query={query}"
+            url = f"https://jio-saa-van.vercel.app/result/?query={query}"
             async with session.get(url) as resp:
                 data = await resp.json()
     except Exception as e:

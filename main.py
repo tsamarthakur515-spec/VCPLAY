@@ -132,7 +132,7 @@ async def play(client, message):
     if len(message.command) < 2:
         return await client.send_message(
             message.chat.id,
-            "<blockquote>Give song name\n\n.play song_name</blockquote>",
+            "Give song name\n\n.play song_name",
             parse_mode="html"
         )
 
@@ -140,7 +140,7 @@ async def play(client, message):
 
     searching = await client.send_message(
         message.chat.id,
-        "<blockquote>🔎 Searching song...</blockquote>",
+        "🔎 Searching song...",
         parse_mode="html"
     )
 
@@ -151,7 +151,7 @@ async def play(client, message):
                 data = await resp.json()
     except Exception as e:
         return await searching.edit_text(
-            f"<blockquote>⚠️ API Error\n{e}</blockquote>",
+            f"⚠️ API Error\n{e}",
             parse_mode="html"
         )
 
@@ -159,7 +159,7 @@ async def play(client, message):
 
     if not results:
         return await searching.edit_text(
-            "<blockquote>❌ No results found</blockquote>",
+            "❌ No results found",
             parse_mode="html"
         )
 
@@ -177,7 +177,7 @@ async def play(client, message):
 
     if not stream_url:
         return await searching.edit_text(
-            "<blockquote>❌ No playable link</blockquote>",
+            "❌ No playable link",
             parse_mode="html"
         )
 
@@ -195,18 +195,16 @@ async def play(client, message):
             )
         except Exception as e:
             return await searching.edit_text(
-                f"<blockquote>⚠️ VC Error\n{e}</blockquote>",
+                f"⚠️ VC Error\n{e}",
                 parse_mode="html"
             )
 
     await searching.edit_text(
-        f"<blockquote>"
         f"🎧 <b>Now Playing</b>\n\n"
         f"🎵 <b>Title:</b> {title}\n"
         f"👤 <b>Artist:</b> {artist}\n"
         f"⏱ <b>Duration:</b> {duration}\n\n"
-        f"🙋 <b>Requested by:</b> {message.from_user.first_name}"
-        f"</blockquote>",
+        f"🙋 <b>Requested by:</b> {message.from_user.first_name}",
         parse_mode="html"
     )
 # ----------------- REPLY TO AUDIO FILE PLAY -----------------

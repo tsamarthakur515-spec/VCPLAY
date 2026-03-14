@@ -129,7 +129,7 @@ async def play(client, message):
     query = message.text.split(None, 1)[1]
     status_msg = await message.reply("`sᴇᴀʀᴄʜɪɴɢ ʏᴏᴜʀ ǫᴜᴇʀʏ 💿`")
 
-    # Fetch API results
+    # Fetch JioSaavn API
     try:
         async with aiohttp.ClientSession() as session:
             url = f"https://jio-saa-van.vercel.app/result/?query={query}"
@@ -140,40 +140,51 @@ async def play(client, message):
 
     results = data
     if not results:
-        return await status_msg.edit("❌ Query not found!")
+        return await status_msg.edit("❌ ǫᴜᴇʀʏ ɴᴏᴛ ғᴏᴜɴᴅ")
 
     song = results[0]
 
-    # Use vlink (MP3) for streaming
-    stream_url = song.get("vlink")
-    title = song.get("song", "Unknown")
-    artist = song.get("primary_artists", "Unknown")
-    duration = song.get("duration", "Unknown")
-
+    # Use direct playable URL
+    stream_url = song.get("vlink")  # MUST use vlink
     if not stream_url:
         return await status_msg.edit("❌ No playable link found!")
 
-    # Join VC or change stream
+    title = song.get("song") or "Unknown"
+    artist = song.get("primary_artists") or song.get("singers") or "Unknown"
+    duration = song.get("duration") or "Unknown"
+
+    # Try to join VC
     try:
         await call.join_group_call(
             message.chat.id,
-            AudioPiped(stream_url, HighQualityAudio()),
-            muted=False
+            AudioPiped(stream_url, HighQualityAudio())
         )
-    except Exception:
-        try:
-            await call.change_stream(
-                message.chat.id,
-                AudioPiped(stream_url, HighQualityAudio())
-            )
-        except Exception as e:
-            return await status_msg.edit(f"⚠️ Could not play in VC: {e}")
+    except Exception as e:
+        # If bot not in VC, leave & rejoin
+        if "isn't in a group call" in str(e):
+            try:
+                await call.leave_group_call(message.chat.id)
+                await call.join_group_call(
+                    message.chat.id,
+                    AudioPiped(stream_url, HighQualityAudio())
+                )
+            except Exception as ee:
+                return await status_msg.edit(f"⚠️ Could not join VC: {ee}")
+        else:
+            # Try change stream if already in VC
+            try:
+                await call.change_stream(
+                    message.chat.id,
+                    AudioPiped(stream_url, HighQualityAudio())
+                )
+            except Exception as ee:
+                return await status_msg.edit(f"⚠️ Could not play in VC: {ee}")
 
     await status_msg.edit(
-        f"🎧 Streaming started!\n"
+        f"🎧 Streaming started!\n\n"
         f"🎵 Title: {title}\n"
         f"👤 Artist: {artist}\n"
-        f"⏱ Duration: {duration} sec\n"
+        f"⏱ Duration: {duration} sec\n\n"
         f"🙋 Requested by: {message.from_user.first_name}\n"
         f"🔗 API: @sxyaru"
     )

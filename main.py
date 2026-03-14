@@ -128,17 +128,16 @@ async def ping(client, message):
     disable_web_page_preview=True
 )
 # ----------------- PLAY COMMAND -----------------
-@app.on_message(filters.command("play", "."))
+@app.on_message(filters.command("play", prefixes="."))
 async def play(client, message):
 
-    chat_id = message.chat.id   # store chat id first
+    chat_id = message.chat.id
 
     try:
         await message.delete()
     except:
         pass
 
-    # Check query
     if len(message.command) < 2:
         return await client.send_message(
             chat_id,

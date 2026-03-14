@@ -1,5 +1,6 @@
 import time
 import psutil
+from urllib.parse import quote
 from datetime import datetime, timedelta
 import asyncio
 import aiohttp
@@ -73,34 +74,44 @@ async def ping(client, message):
 )
     await loading.edit(final_msg, parse_mode="html")
 # ----------------- PLAY COMMAND -----------------
+
 @app.on_message(filters.command("play", "."))
 async def play(client, message):
     if len(message.command) < 2:
         return await message.reply(
-            "```ɢɪᴠᴇ ǫᴜᴇʀʏ ᴛᴏ sᴇᴀʀᴄʜ ʙᴀʙᴇ .play <ǫᴜᴇʀʏ>```"
+            "```ɢɪᴠᴇ ǫᴜᴇʀʏ ᴛᴏ sᴇᴀʀᴄʜ ʙᴀʙᴇ\n.play <song name>```"
         )
 
     query = message.text.split(None, 1)[1]
-    await message.reply("```🥀 sᴇʀᴀᴄʜɪɴɢ ʏᴏᴜʀ ǫᴜᴇʀʏ...```")
+    await message.reply("```🥀 sᴇᴀʀᴄʜɪɴɢ ʏᴏᴜʀ ǫᴜᴇʀʏ...```")
+
+    # Encode query for URL
+    query_encoded = quote(query)
 
     # Fetch song from Flip-Saavn API
     try:
         async with aiohttp.ClientSession() as session:
-            url = f"https://flip-saavn.vercel.app/search?query={query}"
+            url = f"https://flip-saavn.vercel.app/search?query={query_encoded}"
             async with session.get(url) as resp:
                 data = await resp.json()
     except Exception as e:
-        return await message.reply(f"⚠️ Failed to fetch API: {e}")
+        return await message.reply(f"⚠️ API Error:\n{e}")
 
     results = data.get("results")
     if not results:
         return await message.reply("❌ No results found!")
 
     song = results[0]
-    stream_url = song["download"].get("320kbps") or song["download"].get("160kbps")
-    title = song.get("title")
-    artist = song.get("artist")
-    duration = song.get("duration")  # duration from API if available
+
+    stream_url = (
+        song.get("download", {}).get("320kbps")
+        or song.get("download", {}).get("160kbps")
+        or song.get("download", {}).get("128kbps")
+    )
+
+    title = song.get("title", "Unknown")
+    artist = song.get("artist", "Unknown")
+    duration = song.get("duration", "Unknown")
 
     if not stream_url:
         return await message.reply("❌ No playable link found!")
@@ -111,20 +122,22 @@ async def play(client, message):
             message.chat.id,
             AudioPiped(stream_url, HighQualityAudio())
         )
-    except Exception as e:
+    except:
         try:
             await call.change_stream(
                 message.chat.id,
                 AudioPiped(stream_url, HighQualityAudio())
             )
-        except Exception as e2:
-            return await message.reply(f"⚠️ Could not play in VC: {e2}")
+        except Exception as e:
+            return await message.reply(f"⚠️ Could not play in VC:\n{e}")
 
     await message.reply(
-        f"▶️ ᴘʟᴀʏɪɴɢ: {title} — {artist}\n"
-        f"⏱ ᴅᴜʀᴀᴛɪᴏɴ: {duration or 'Unknown'}\n"
-        f"🎵 ʀᴇǫᴛsᴇᴅ ʙʏ: {message.from_user.first_name}\n"
-        f"🔗 ᴍᴜsɪᴄ ʙᴀsᴇᴅ ᴏɴ: <a href='https://t.me/sxyaru>ᴀʀᴜ x ᴀᴘɪ ʙᴏᴛs</a>"
+        f"▶️ <b>ᴘʟᴀʏɪɴɢ:</b> {title} — {artist}\n"
+        f"⏱ <b>ᴅᴜʀᴀᴛɪᴏɴ:</b> {duration}\n"
+        f"🎵 <b>ʀᴇǫᴜᴇsᴛᴇᴅ ʙʏ:</b> {message.from_user.first_name}\n"
+        f"🔗 <b>ᴍᴜsɪᴄ ʙᴀsᴇᴅ ᴏɴ:</b> "
+        f"<a href='https://t.me/sxyaru'>ᴀʀᴜ x ᴀᴘɪ ʙᴏᴛs</a>",
+        parse_mode="html"
     )
 
 

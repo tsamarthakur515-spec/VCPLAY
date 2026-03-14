@@ -30,49 +30,39 @@ async def ping(client, message):
     loading = await message.reply("0% ▒▒▒▒▒▒▒▒▒▒")
 
     stages = [
-        ("20% ███▒▒▒▒▒▒▒ sᴀᴍᴀʀ", 0.08),
-        ("40% █████▒▒▒▒ sᴀᴍᴀʀ ɪs", 0.08),
-        ("60% ███████▒▒ sᴀᴍᴀʀ ᴄᴏᴍᴇ", 0.09),
-        ("80% █████████▒ sᴀᴍᴀʀ", 0.09),
-        ("100% ██████████ ᴄᴏᴍɪɴɢ", 0.10),
+        ("20% ███▒▒▒▒▒▒▒ sᴀᴍᴀʀ", 0.15),
+        ("40% █████▒▒▒▒ sᴀᴍᴀʀ ɪs", 0.15),
+        ("60% ███████▒▒ sᴀᴍᴀʀ ᴄᴏᴍᴇ", 0.15),
+        ("80% █████████▒ sᴀᴍᴀʀ", 0.15),
     ]
 
     for text, delay in stages:
         await asyncio.sleep(delay)
         await loading.edit(text)
 
-    # Small pause
-    await asyncio.sleep(0.1)
-
-    # Calculate ping
     end = time.monotonic()
     ping_ms = round((end - start) * 1000, 1)
 
-    # Uptime
     uptime_sec = int((datetime.now() - BOT_START_TIME).total_seconds())
     uptime = str(timedelta(seconds=uptime_sec)).split('.')[0]
 
-    # CPU
     cpu_percent = psutil.cpu_percent(interval=0.5)
 
-    # PyTgCalls status
     try:
         pytgcalls_status = "🟢 Active" if call.is_connected else "🔴 Not active"
     except:
         pytgcalls_status = "⚠️ Unknown"
 
-    # Bot name
     me = await client.get_me()
-    fullname = f"{me.first_name or ''} {me.last_name or ''}".strip() or me.username or "User"
+    fullname = f"{me.first_name or ''} {me.last_name or ''}".strip() or me.username
 
-    # Final message
     final_msg = (
         f"❏ ╰☞ 😈 {fullname} 😈\n"
-        f"├• ╰☞ sᴘᴇᴇᴅ: {ping_ms} ms\n"
-        f"├• ╰☞ ᴜᴘᴛɪᴍᴇ: {uptime}\n"
-        f"├• ╰☞ ᴄᴘᴜ: {cpu_percent}%\n"
-        f"├• ╰☞ ᴘʏᴛɢᴄᴀʟʟs: {pytgcalls_status}\n"
-        f"└• ╰☞ ᴀᴘɪ ʙʏ: <a href='https://t.me/sxyaru'>ᴀʀᴜ x ᴀᴘɪ ʙᴏᴛs</a>"
+        f"├• ╰☞ Speed: {ping_ms} ms\n"
+        f"├• ╰☞ Uptime: {uptime}\n"
+        f"├• ╰☞ CPU: {cpu_percent}%\n"
+        f"├• ╰☞ PyTgCalls: {pytgcalls_status}\n"
+        f"└• ╰☞ API by: <a href='https://t.me/sxyaru'>Aru x API Bots</a>"
     )
 
     await loading.edit(final_msg, parse_mode="html")

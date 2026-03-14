@@ -26,10 +26,9 @@ call = PyTgCalls(app)
 @app.on_message(filters.command("ping", "."))
 async def ping(client, message):
     start = time.monotonic()
-BOT_START_TIME = datetime.now()
 
-    # Loading bar animation
     loading = await message.reply("0% ▒▒▒▒▒▒▒▒▒▒")
+
     stages = [
         ("20% ███▒▒▒▒▒▒▒ sᴀᴍᴀʀ", 0.08),
         ("40% █████▒▒▒▒ sᴀᴍᴀʀ ɪs", 0.08),
@@ -43,7 +42,7 @@ BOT_START_TIME = datetime.now()
         await loading.edit(text)
 
     # Small pause
-    await asyncio.sleep(0.2)
+    await asyncio.sleep(0.1)
 
     # Calculate ping
     end = time.monotonic()

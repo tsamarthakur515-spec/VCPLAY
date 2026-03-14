@@ -99,19 +99,19 @@ async def play(client, message):
 
     # Check query
     if len(message.command) < 2:
-        return await message.reply_text(
+        return await client.send_message(
+            message.chat.id,
             "<blockquote>Give song name\n\n.play song_name</blockquote>",
-            parse_mode="html",
-            quote=True
+            parse_mode="html"
         )
 
     query = " ".join(message.command[1:])
 
     searching = await client.send_message(
-    message.chat.id,
-    "<blockquote>🔎 Searching song...</blockquote>",
-    parse_mode="html"
-)
+        message.chat.id,
+        "<blockquote>🔎 Searching song...</blockquote>",
+        parse_mode="html"
+    )
 
     try:
         async with aiohttp.ClientSession() as session:
@@ -150,6 +150,7 @@ async def play(client, message):
             parse_mode="html"
         )
 
+    # Join or change VC stream
     try:
         await call.join_group_call(
             message.chat.id,

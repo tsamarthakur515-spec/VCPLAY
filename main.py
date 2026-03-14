@@ -71,17 +71,17 @@ async def ping(client, message):
         f"├• ╰☞ ᴘʏᴛɢᴄᴀʟʟs: {pytgcalls_status}\n"
         f"└• ╰☞ ᴀᴘɪ ʙʏ: <a href='https://t.me/sxyaru>ᴀʀᴜ x ᴀᴘɪ ʙᴏᴛs</a>"
 )
-    await loading.edit(final_msg)
+    await loading.edit(final_msg, parse_mode="html")
 # ----------------- PLAY COMMAND -----------------
 @app.on_message(filters.command("play", "."))
 async def play(client, message):
     if len(message.command) < 2:
         return await message.reply(
-            "❌ Please provide a song name.\nExample: `.play Sabrina Carpenter`"
+            "```ɢɪᴠᴇ ǫᴜᴇʀʏ ᴛᴏ sᴇᴀʀᴄʜ ʙᴀʙᴇ .play <ǫᴜᴇʀʏ>```"
         )
 
     query = message.text.split(None, 1)[1]
-    await message.reply("🔎 Searching Saavn...")
+    await message.reply("```🥀 sᴇʀᴀᴄʜɪɴɢ ʏᴏᴜʀ ǫᴜᴇʀʏ...```")
 
     # Fetch song from Flip-Saavn API
     try:
@@ -121,10 +121,10 @@ async def play(client, message):
             return await message.reply(f"⚠️ Could not play in VC: {e2}")
 
     await message.reply(
-        f"▶️ Playing: {title} — {artist}\n"
-        f"⏱ Duration: {duration or 'Unknown'}\n"
-        f"🎵 Requested by: {message.from_user.first_name}\n"
-        f"🔗 Music based on: [JioSaavn](https://t.me/sxyaru)"
+        f"▶️ ᴘʟᴀʏɪɴɢ: {title} — {artist}\n"
+        f"⏱ ᴅᴜʀᴀᴛɪᴏɴ: {duration or 'Unknown'}\n"
+        f"🎵 ʀᴇǫᴛsᴇᴅ ʙʏ: {message.from_user.first_name}\n"
+        f"🔗 ᴍᴜsɪᴄ ʙᴀsᴇᴅ ᴏɴ: <a href='https://t.me/sxyaru>ᴀʀᴜ x ᴀᴘɪ ʙᴏᴛs</a>"
     )
 
 

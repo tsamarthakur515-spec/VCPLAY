@@ -128,29 +128,26 @@ async def ping(client, message):
     disable_web_page_preview=True
 )
 # ----------------- PLAY COMMAND -----------------
-@app.on_message(filters.command("play", prefixes="."))
+@app.on_message(filters.command("play", "."))
 async def play(client, message):
-
-    chat_id = message.chat.id
 
     try:
         await message.delete()
     except:
         pass
 
+    # Check query
     if len(message.command) < 2:
-        return await client.send_message(
-            chat_id,
-            "Give song name\n\n.play song_name",
-            parse_mode="html"
+        return await message.reply_text(
+            "Give song name\n\n.play <song name>",
+            quote=True
         )
 
     query = " ".join(message.command[1:])
 
-    searching = await client.send_message(
-        chat_id,
+    searching = await message.reply_text(
         "🔎 Searching song...",
-        parse_mode="html"
+        quote=True
     )
 
     try:
@@ -159,18 +156,12 @@ async def play(client, message):
             async with session.get(url) as resp:
                 data = await resp.json()
     except Exception as e:
-        return await searching.edit_text(
-            f"⚠️ API Error\n{e}",
-            parse_mode="html"
-        )
+        return await searching.edit_text(f"API Error: {e}")
 
     results = data.get("results")
 
     if not results:
-        return await searching.edit_text(
-            "❌ No results found",
-            parse_mode="html"
-        )
+        return await searching.edit_text("❌ No results found!")
 
     song = results[0]
 
@@ -185,34 +176,28 @@ async def play(client, message):
     duration = song.get("duration", "Unknown")
 
     if not stream_url:
-        return await searching.edit_text(
-            "❌ No playable link",
-            parse_mode="html"
-        )
+        return await searching.edit_text("❌ No playable link")
 
     try:
         await call.join_group_call(
-            chat_id,
+            message.chat.id,
             AudioPiped(stream_url, HighQualityAudio())
         )
     except:
         try:
             await call.change_stream(
-                chat_id,
+                message.chat.id,
                 AudioPiped(stream_url, HighQualityAudio())
             )
         except Exception as e:
-            return await searching.edit_text(
-                f"⚠️ VC Error\n{e}",
-                parse_mode="html"
-            )
+            return await searching.edit_text(f"VC Error: {e}")
 
     await searching.edit_text(
-        f"🎧 <b>Now Playing</b>\n\n"
-        f"🎵 <b>Title:</b> {title}\n"
-        f"👤 <b>Artist:</b> {artist}\n"
-        f"⏱ <b>Duration:</b> {duration}\n\n"
-        f"🙋 <b>Requested by:</b> {message.from_user.first_name}",
+        f"▶️ <b>Playing</b>\n\n"
+        f"🎵 {title}\n"
+        f"👤 {artist}\n"
+        f"⏱ {duration}\n\n"
+        f"Requested by: {message.from_user.first_name}",
         parse_mode="html"
     )
 # ----------------- REPLY TO AUDIO FILE PLAY -----------------

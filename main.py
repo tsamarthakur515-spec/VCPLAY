@@ -83,7 +83,7 @@ async def ping(client, message):
     f"</blockquote>"
 )
 
-    await msg.edit(
+    await msg.edit_text(
     text,
     parse_mode=ParseMode.HTML,
     disable_web_page_preview=True

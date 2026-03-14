@@ -72,17 +72,17 @@ async def ping(client, message):
     name = me.first_name
 
     text = (
-        f"╭─❖ **{name} Bot Status**\n"
-        f"├⚡ **Ping:** `{ping} ms`\n"
-        f"├⏱ **Uptime:** `{uptime}`\n"
-        f"├💻 **CPU:** `{cpu}%`\n"
-        f"├🎧 **VC:** {vc_status}\n"
-        f"╰🔗 **API:** [Aru x API Bots](t.me.sxyaru)"
+        f"<blockquote>"
+        f"╭─❖ <b>{name} Bot Status</b>\n"
+        f"├⚡ <b>Ping:</b> <code>{ping} ms</code>\n"
+        f"├⏱ <b>Uptime:</b> <code>{uptime}</code>\n"
+        f"├💻 <b>CPU:</b> <code>{cpu}%</code>\n"
+        f"├🎧 <b>VC:</b> {vc_status}\n"
+        f"╰🔗 <b>API:</b> <a href='https://t.me/sxyaru'>Aru x API Bots</a>"
+        f"</blockquote>"
     )
 
-    await msg.edit(text, disable_web_page_preview=True)
-
-    await loading.edit(final_msg, parse_mode="html")
+    await msg.edit(text, parse_mode="html", disable_web_page_preview=True)
 # ----------------- PLAY COMMAND -----------------
 @app.on_message(filters.command("play", "."))
 async def play(client, message):

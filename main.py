@@ -25,15 +25,14 @@ call = PyTgCalls(app)
 @app.on_message(filters.command("ping", "."))
 async def ping(client, message):
     start = time.monotonic()
-BOT_START_TIME = datetime.now()  # Set at bot startup
-  
+
     # Loading bar animation
     loading = await message.reply("0% ▒▒▒▒▒▒▒▒▒▒")
     stages = [
-        ("20% ███▒▒▒▒▒▒▒ ᴀʀᴜ", 0.08),
-        ("40% █████▒▒▒▒ ᴀʀᴜ ɪs", 0.08),
-        ("60% ███████▒▒ ᴀʀᴜ ᴄᴏᴍᴇ", 0.09),
-        ("80% █████████▒ ᴀʀᴜ", 0.09),
+        ("20% ███▒▒▒▒▒▒▒ sᴀᴍᴀʀ", 0.08),
+        ("40% █████▒▒▒▒ sᴀᴍᴀʀ ɪs", 0.08),
+        ("60% ███████▒▒ sᴀᴍᴀʀ ᴄᴏᴍᴇ", 0.09),
+        ("80% █████████▒ sᴀᴍᴀʀ", 0.09),
         ("100% ██████████ ᴄᴏᴍɪɴɢ", 0.10),
     ]
 
@@ -62,7 +61,7 @@ BOT_START_TIME = datetime.now()  # Set at bot startup
 
     # Final formatted message
     final_msg = (
-        f"❏ ╰☞ 😈 {message.from_user.first_name} 😈\n"
+        f"❏ ╰☞ 😈 {fullname} 😈\n"
         f"├• ╰☞ 𝐒ᴘᴇᴇᴅ: {ping_ms} ms\n"
         f"├• ╰☞ 𝐔ᴘᴛɪᴍᴇ: {uptime}\n"
         f"├• ╰☞ 💻 CPU: {cpu_percent}%\n"

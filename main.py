@@ -84,7 +84,7 @@ async def ping(client, message):
 
     await loading.edit(final_msg, parse_mode="html")
 # ----------------- PLAY COMMAND -----------------
-
+@app.on_message(filters.command("play", "."))
 async def play(client, message):
 
     try:
@@ -172,7 +172,6 @@ async def play(client, message):
         f"</blockquote>",
         parse_mode="html"
     )
-
 # ----------------- REPLY TO AUDIO FILE PLAY -----------------
 @app.on_message(filters.command("rfplay", "."))
 async def rfplay_music(_, message):

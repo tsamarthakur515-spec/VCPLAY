@@ -3,6 +3,7 @@ import psutil
 from urllib.parse import quote
 from datetime import datetime, timedelta
 import asyncio
+from asyncio import create_task, sleep, CancelledError
 import aiohttp
 from pyrogram.enums import ParseMode
 from pyrogram import Client, filters
@@ -125,6 +126,35 @@ def create_progress_bar(current, total, length=12):
     pos = int(length * current / total)
     bar = "─" * pos + "•" + "─" * (length - pos)
     return bar
+
+#DURATION STOP
+
+progress_tasks = {}  # chat_id -> task
+
+async def update_progress(chat_id, status_msg, duration):
+    try:
+        total = int(duration)
+        for i in range(total + 1):
+            mins, secs = divmod(i, 60)
+            total_mins, total_secs = divmod(total, 60)
+            bar_len = 20
+            filled = int(bar_len * i / total)
+            bar = "▬" * filled + "🔘" + "▬" * (bar_len - filled)
+            await status_msg.edit(
+                f"{mins:02}:{secs:02} {bar} {total_mins:02}:{total_secs:02}"
+            )
+            await sleep(1)
+    except CancelledError:
+        pass  # Task was cancelled when song stopped
+
+# In your .play handler
+task = create_task(update_progress(message.chat.id, status_msg, duration))
+progress_tasks[message.chat.id] = task
+
+# In your .stop handler
+if message.chat.id in progress_tasks:
+    progress_tasks[message.chat.id].cancel()
+    del progress_tasks[message.chat.id]
 
 @app.on_message(filters.command("play", "."))
 async def play(client, message):

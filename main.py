@@ -123,6 +123,8 @@ async def ping(client, message):
 @app.on_message(filters.command("play", "."))
 async def play(client, message):
 
+    chat_id = message.chat.id   # store chat id first
+
     try:
         await message.delete()
     except:
@@ -131,7 +133,7 @@ async def play(client, message):
     # Check query
     if len(message.command) < 2:
         return await client.send_message(
-            message.chat.id,
+            chat_id,
             "Give song name\n\n.play song_name",
             parse_mode="html"
         )
@@ -139,7 +141,7 @@ async def play(client, message):
     query = " ".join(message.command[1:])
 
     searching = await client.send_message(
-        message.chat.id,
+        chat_id,
         "🔎 Searching song...",
         parse_mode="html"
     )
@@ -181,16 +183,15 @@ async def play(client, message):
             parse_mode="html"
         )
 
-    # Join or change VC stream
     try:
         await call.join_group_call(
-            message.chat.id,
+            chat_id,
             AudioPiped(stream_url, HighQualityAudio())
         )
     except:
         try:
             await call.change_stream(
-                message.chat.id,
+                chat_id,
                 AudioPiped(stream_url, HighQualityAudio())
             )
         except Exception as e:

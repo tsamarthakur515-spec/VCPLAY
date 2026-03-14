@@ -21,8 +21,39 @@ call = PyTgCalls(app)
 BOT_START_TIME = datetime.now()
 # ----------------- COMMANDS ------------------
 
-#PINH COMMAND
+# VOICE COMMAND
 
+@app.on_message(filters.command("level", "."))
+async def voice_level(client, message):
+
+    try:
+        level = int(message.command[1])
+    except:
+        return await message.reply_text(
+            "Usage: .level 1-20"
+        )
+
+    if level < 1 or level > 20:
+        return await message.reply_text(
+            "Level must be between 1 - 20"
+        )
+
+    volume = level * 10
+
+    try:
+        await call.set_my_volume(message.chat.id, volume)
+    except Exception as e:
+        return await message.reply_text(
+            f"VC Error:\n{e}"
+        )
+
+    await message.reply_text(
+        f"🎤 <b>Mic Voice Boosted</b>\n\n"
+        f"Level: <b>{level}</b>\n"
+        f"Volume: <b>{volume}%</b>",
+        parse_mode=ParseMode.HTML
+    )
+#PINH COMMAND
 
 @app.on_message(filters.command("ping", "."))
 async def ping(client, message):

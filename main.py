@@ -67,7 +67,7 @@ BOT_START_TIME = datetime.now()  # Set at bot startup
         f"├• ╰☞ 𝐔ᴘᴛɪᴍᴇ: {uptime}\n"
         f"├• ╰☞ 💻 CPU: {cpu_percent}%\n"
         f"├• ╰☞ 🎵 PyTgCalls: {pytgcalls_status}\n"
-        f"└• ╰☞ API by: [JioSaavn](https://flip-saavn.vercel.app/)"
+        f"└• ╰☞ API by: [JioSaavn](https://t.me/sxyaru)"
     )
 
     await loading.edit(final_msg)
@@ -124,7 +124,7 @@ async def play(client, message):
         f"▶️ Playing: {title} — {artist}\n"
         f"⏱ Duration: {duration or 'Unknown'}\n"
         f"🎵 Requested by: {message.from_user.first_name}\n"
-        f"🔗 Music based on: [Flip-Saavn]({url})"
+        f"🔗 Music based on: [JioSaavn](https://t.me/sxyaru)"
     )
 
 

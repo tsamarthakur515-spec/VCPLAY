@@ -25,49 +25,62 @@ BOT_START_TIME = datetime.now()
 
 @app.on_message(filters.command("ping", "."))
 async def ping(client, message):
+
     try:
         await message.delete()
     except:
         pass
+
     start = time.monotonic()
 
-    loading = await message.reply("0% ▒▒▒▒▒▒▒▒▒▒")
+    msg = await message.reply_text("⚡ Pinging...")
 
-    stages = [
-    ("20% ███▒▒▒▒▒▒▒ sᴀᴍᴀʀ", 0.5),
-    ("40% █████▒▒▒▒ sᴀᴍᴀʀ ɪs", 0.5),
-    ("60% ███████▒▒ sᴀᴍᴀʀ ᴄᴏᴍᴇ", 0.5),
-    ("80% █████████▒ sᴀᴍᴀʀ", 0.5),
-]
+    frames = [
+        "▰▱▱▱▱▱▱▱▱▱ 10%",
+        "▰▰▱▱▱▱▱▱▱▱ 20%",
+        "▰▰▰▱▱▱▱▱▱▱ 30%",
+        "▰▰▰▰▱▱▱▱▱▱ 40%",
+        "▰▰▰▰▰▱▱▱▱▱ 50%",
+        "▰▰▰▰▰▰▱▱▱▱ 60%",
+        "▰▰▰▰▰▰▰▱▱▱ 70%",
+        "▰▰▰▰▰▰▰▰▱▱ 80%",
+        "▰▰▰▰▰▰▰▰▰▱ 90%",
+        "▰▰▰▰▰▰▰▰▰▰ 100%"
+    ]
 
-    for text, delay in stages:
-        await asyncio.sleep(delay)
-        await loading.edit(text)
+    for frame in frames:
+        await asyncio.sleep(0.3)
+        try:
+            await msg.edit(f"⚡ Checking Bot Speed...\n\n{frame}")
+        except:
+            pass
 
     end = time.monotonic()
-    ping_ms = round((end - start) * 1000, 1)
+    ping = round((end - start) * 1000, 2)
 
     uptime_sec = int((datetime.now() - BOT_START_TIME).total_seconds())
     uptime = str(timedelta(seconds=uptime_sec)).split('.')[0]
 
-    cpu_percent = psutil.cpu_percent(interval=0.5)
+    cpu = psutil.cpu_percent()
 
     try:
-        pytgcalls_status = "🟢 Active" if call.is_connected else "🔴 Not active"
+        vc_status = "🟢 Active" if call.is_connected else "🔴 Not Active"
     except:
-        pytgcalls_status = "⚠️ Unknown"
+        vc_status = "⚠️ Unknown"
 
     me = await client.get_me()
-    fullname = f"{me.first_name or ''} {me.last_name or ''}".strip() or me.username
+    name = me.first_name
 
-    final_msg = (
-        f"❏ ╰☞ 😈 {fullname} 😈\n"
-        f"├• ╰☞ Speed: {ping_ms} ms\n"
-        f"├• ╰☞ Uptime: {uptime}\n"
-        f"├• ╰☞ CPU: {cpu_percent}%\n"
-        f"├• ╰☞ PyTgCalls: {pytgcalls_status}\n"
-        f"└• ╰☞ API by: <a href='https://t.me/sxyaru'>Aru x API Bots</a>"
+    text = (
+        f"╭─❖ **{name} Bot Status**\n"
+        f"├⚡ **Ping:** `{ping} ms`\n"
+        f"├⏱ **Uptime:** `{uptime}`\n"
+        f"├💻 **CPU:** `{cpu}%`\n"
+        f"├🎧 **VC:** {vc_status}\n"
+        f"╰🔗 **API:** [Aru x API Bots](https://t.me/sxyaru)"
     )
+
+    await msg.edit(text, disable_web_page_preview=True)
 
     await loading.edit(final_msg, parse_mode="html")
 # ----------------- PLAY COMMAND -----------------

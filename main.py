@@ -124,7 +124,7 @@ async def play(client, message):
         return await message.reply("ɢɪᴠᴇ ǫᴜᴇʀʏ ᴛᴏ sᴇᴀʀᴄʜ\n\nExample:`.play mann mera`")
 
     query = message.text.split(None, 1)[1]
-    await message.reply("```sᴇᴀʀᴄʜɪɴɢ ʏᴏᴜʀ ǫᴜᴇʀʏ ʙᴀʙᴇ 💋```")
+    await message.reply("`sᴇᴀʀᴄʜɪɴɢ ʏᴏᴜʀ ǫᴜᴇʀʏ ʙᴀʙᴇ 💋`")
 
     try:
         async with aiohttp.ClientSession() as session:

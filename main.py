@@ -83,7 +83,11 @@ async def ping(client, message):
         f"</blockquote>"
     )
 
-    await msg.edit(text, parse_mode="html", disable_web_page_preview=True)
+    await msg.edit(
+    text,
+    parse_mode=ParseMode.HTML,
+    disable_web_page_preview=True
+)
 # ----------------- PLAY COMMAND -----------------
 @app.on_message(filters.command("play", "."))
 async def play(client, message):

@@ -41,16 +41,18 @@ async def ping(client, message):
         await asyncio.sleep(delay)
         await loading.edit(text)
 
-    # Small pause to ensure final edit works
+    # Small pause
     await asyncio.sleep(0.2)
 
-    # Calculate ping and uptime
+    # Calculate ping
     end = time.monotonic()
     ping_ms = round((end - start) * 1000, 1)
+
+    # Uptime
     uptime_sec = int((datetime.now() - BOT_START_TIME).total_seconds())
     uptime = str(timedelta(seconds=uptime_sec)).split('.')[0]
 
-    # CPU usage
+    # CPU
     cpu_percent = psutil.cpu_percent(interval=0.5)
 
     # PyTgCalls status
@@ -59,19 +61,20 @@ async def ping(client, message):
     except:
         pytgcalls_status = "⚠️ Unknown"
 
-    # Bot user info
+    # Bot name
     me = await client.get_me()
     fullname = f"{me.first_name or ''} {me.last_name or ''}".strip() or me.username or "User"
 
-    # Final formatted message
+    # Final message
     final_msg = (
         f"❏ ╰☞ 😈 {fullname} 😈\n"
         f"├• ╰☞ sᴘᴇᴇᴅ: {ping_ms} ms\n"
         f"├• ╰☞ ᴜᴘᴛɪᴍᴇ: {uptime}\n"
         f"├• ╰☞ ᴄᴘᴜ: {cpu_percent}%\n"
         f"├• ╰☞ ᴘʏᴛɢᴄᴀʟʟs: {pytgcalls_status}\n"
-        f"└• ╰☞ ᴀᴘɪ ʙʏ: <a href='https://t.me/sxyaru>ᴀʀᴜ x ᴀᴘɪ ʙᴏᴛs</a>"
-)
+        f"└• ╰☞ ᴀᴘɪ ʙʏ: <a href='https://t.me/sxyaru'>ᴀʀᴜ x ᴀᴘɪ ʙᴏᴛs</a>"
+    )
+
     await loading.edit(final_msg, parse_mode="html")
 # ----------------- PLAY COMMAND -----------------
 

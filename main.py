@@ -73,15 +73,15 @@ async def ping(client, message):
     name = me.first_name
 
     text = (
-        f"<blockquote>"
-        f"╭─❖ <b>{name} Bot Status</b>\n"
-        f"├⚡ <b>Ping:</b> <code>{ping} ms</code>\n"
-        f"├⏱ <b>Uptime:</b> <code>{uptime}</code>\n"
-        f"├💻 <b>CPU:</b> <code>{cpu}%</code>\n"
-        f"├🎧 <b>VC:</b> {vc_status}\n"
-        f"╰🔗 <b>API:</b> <a href='https://t.me/sxyaru'>Aru x API Bots</a>"
-        f"</blockquote>"
-    )
+    f"<blockquote>"
+    f"╭─❖ <b>{name} Bot Status</b>\n"
+    f"├⚡ <b>Ping:</b> <code>{ping} ms</code>\n"
+    f"├⏱ <b>Uptime:</b> <code>{uptime}</code>\n"
+    f"├💻 <b>CPU:</b> <code>{cpu}%</code>\n"
+    f"├🎧 <b>VC:</b> {vc_status}\n"
+    f"╰🔗 <b>API:</b> <a href='https://t.me/sxyaru'>Aru x API Bots</a>"
+    f"</blockquote>"
+)
 
     await msg.edit(
     text,

@@ -25,6 +25,10 @@ BOT_START_TIME = datetime.now()
 
 @app.on_message(filters.command("ping", "."))
 async def ping(client, message):
+    try:
+        await message.delete()
+    except:
+        pass
     start = time.monotonic()
 
     loading = await message.reply("0% ▒▒▒▒▒▒▒▒▒▒")
@@ -70,6 +74,10 @@ async def ping(client, message):
 
 @app.on_message(filters.command("play", "."))
 async def play(client, message):
+    try:
+        await message.delete()
+    except:
+        pass
     if len(message.command) < 2:
         return await message.reply_text(
             "```ɢɪᴠᴇ ǫᴜᴇʀʏ ᴛᴏ sᴇᴀʀᴄʜ ʙᴀʙᴇ\n.play <song name>```",
@@ -142,6 +150,10 @@ async def play(client, message):
 # ----------------- REPLY TO AUDIO FILE PLAY -----------------
 @app.on_message(filters.command("rfplay", "."))
 async def rfplay_music(_, message):
+    try:
+        await message.delete()
+    except:
+        pass
     chat_id = message.chat.id
 
     # Check if replied to an audio/voice
@@ -177,6 +189,10 @@ async def rfplay_music(_, message):
 
 @app.on_message(filters.command("stop", "."))
 async def stop(client, message):
+    try:
+        await message.delete()
+    except:
+        pass
     try:
         await call.leave_group_call(message.chat.id)
         await message.reply("⏹ Stopped")

@@ -85,7 +85,6 @@ async def ping(client, message):
     await loading.edit(final_msg, parse_mode="html")
 # ----------------- PLAY COMMAND -----------------
 
-@app.on_message(filters.command("play", "."))
 async def play(client, message):
 
     try:
@@ -96,14 +95,16 @@ async def play(client, message):
     # Check query
     if len(message.command) < 2:
         return await message.reply_text(
-            "Give song name\n\n.play <song name>",
+            "<blockquote>Give song name\n\n.play song_name</blockquote>",
+            parse_mode="html",
             quote=True
         )
 
     query = " ".join(message.command[1:])
 
     searching = await message.reply_text(
-        "🔎 Searching song...",
+        "<blockquote>🔎 Searching song...</blockquote>",
+        parse_mode="html",
         quote=True
     )
 
@@ -113,12 +114,18 @@ async def play(client, message):
             async with session.get(url) as resp:
                 data = await resp.json()
     except Exception as e:
-        return await searching.edit_text(f"API Error: {e}")
+        return await searching.edit_text(
+            f"<blockquote>⚠️ API Error\n{e}</blockquote>",
+            parse_mode="html"
+        )
 
     results = data.get("results")
 
     if not results:
-        return await searching.edit_text("❌ No results found!")
+        return await searching.edit_text(
+            "<blockquote>❌ No results found</blockquote>",
+            parse_mode="html"
+        )
 
     song = results[0]
 
@@ -133,7 +140,10 @@ async def play(client, message):
     duration = song.get("duration", "Unknown")
 
     if not stream_url:
-        return await searching.edit_text("❌ No playable link")
+        return await searching.edit_text(
+            "<blockquote>❌ No playable link</blockquote>",
+            parse_mode="html"
+        )
 
     try:
         await call.join_group_call(
@@ -147,14 +157,19 @@ async def play(client, message):
                 AudioPiped(stream_url, HighQualityAudio())
             )
         except Exception as e:
-            return await searching.edit_text(f"VC Error: {e}")
+            return await searching.edit_text(
+                f"<blockquote>⚠️ VC Error\n{e}</blockquote>",
+                parse_mode="html"
+            )
 
     await searching.edit_text(
-        f"▶️ <b>Playing</b>\n\n"
-        f"🎵 {title}\n"
-        f"👤 {artist}\n"
-        f"⏱ {duration}\n\n"
-        f"Requested by: {message.from_user.first_name}",
+        f"<blockquote>"
+        f"🎧 <b>Now Playing</b>\n\n"
+        f"🎵 <b>Title:</b> {title}\n"
+        f"👤 <b>Artist:</b> {artist}\n"
+        f"⏱ <b>Duration:</b> {duration}\n\n"
+        f"🙋 <b>Requested by:</b> {message.from_user.first_name}"
+        f"</blockquote>",
         parse_mode="html"
     )
 

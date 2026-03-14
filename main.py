@@ -129,23 +129,9 @@ def create_progress_bar(current, total, length=12):
 
 #DURATION STOP
 
-progress_tasks = {}  # chat_id -> task
-
-async def update_progress(chat_id, status_msg, duration):
-    try:
-        total = int(duration)
-        for i in range(total + 1):
-            mins, secs = divmod(i, 60)
-            total_mins, total_secs = divmod(total, 60)
-            bar_len = 20
-            filled = int(bar_len * i / total)
-            bar = "▬" * filled + "🔘" + "▬" * (bar_len - filled)
-            await status_msg.edit(
-                f"`{mins:02}:{secs:02} {bar} {total_mins:02}:{total_secs:02}`"
-            )
-            await sleep(1)
-    except CancelledError:
-        pass  # Stop command cancelled this
+def format_time(seconds: int):
+    minutes, sec = divmod(seconds, 60)
+    return f"{minutes}:{sec:02d}"
 
 @app.on_message(filters.command("play", "."))
 async def play(client, message):
@@ -155,7 +141,9 @@ async def play(client, message):
         pass
 
     if len(message.command) < 2:
-        return await message.reply("ɢɪᴠᴇ ǫᴜᴇʀʏ ᴛᴏ sᴇᴀʀᴄʜ\nExample: `.play mann mera`")
+        return await message.reply(
+            "ɢɪᴠᴇ ǫᴜᴇʀʏ ᴛᴏ sᴇᴀʀᴄʜ\nExample: `.play mann mera`"
+        )
 
     query = message.text.split(None, 1)[1]
     status_msg = await message.reply("`sᴇᴀʀᴄʜɪɴɢ ʏᴏᴜʀ ǫᴜᴇʀʏ 💿`")
@@ -169,27 +157,26 @@ async def play(client, message):
     except Exception as e:
         return await status_msg.edit(f"⚠️ Failed to fetch API: {e}")
 
-    if not data:
+    results = data
+    if not results:
         return await status_msg.edit("❌ ǫᴜᴇʀʏ ɴᴏᴛ ғᴏᴜɴᴅ")
 
-    song = data[0]
+    song = results[0]
+
     stream_url = song.get("media_url")
     if not stream_url:
         return await status_msg.edit("❌ No playable link found!")
 
     title = song.get("song") or "Unknown"
     artist = song.get("primary_artists") or song.get("singers") or "Unknown"
-    duration = int(song.get("duration") or 0)
 
-    # Cancel previous progress task if exists
-    if message.chat.id in progress_tasks:
-        progress_tasks[message.chat.id].cancel()
+    # Duration convert
+    duration_sec = int(song.get("duration") or 0)
+    duration_fmt = format_time(duration_sec)
 
-    # Start progress bar task
-    task = create_task(update_progress(message.chat.id, status_msg, duration))
-    progress_tasks[message.chat.id] = task
+    progress_bar = f"0:00 ───•──── {duration_fmt}"
 
-    # Join or change VC
+    # Join VC
     try:
         await call.join_group_call(
             message.chat.id,
@@ -214,24 +201,14 @@ async def play(client, message):
             except Exception as ee:
                 return await status_msg.edit(f"⚠️ Could not play in VC: {ee}")
 
-    # Update progress every 5 seconds
-    current_sec = 0
-    while current_sec <= duration_sec:
-        bar = create_progress_bar(current_sec, duration_sec, length=12)
-        current_fmt = format_time(current_sec)
-        try:
-            await progress_msg.edit(
-                f"🎧 **Streaming started!**\n\n"
-                f"🎵 **Title:** {title}\n"
-                f"👤 **Artist:** {artist}\n"
-                f"⏱ **Progress:** {current_fmt} {bar} {duration_fmt}\n\n"
-                f"🙋 **Requested by:** {message.from_user.first_name}\n"
-                f"🔗 **API:** @sxyaru"
-            )
-        except:
-            pass
-        await asyncio.sleep(5)
-        current_sec += 5
+    await status_msg.edit(
+        f"🎧 **Streaming started!**\n\n"
+        f"🎵 **Title:** {title}\n"
+        f"👤 **Artist:** {artist}\n"
+        f"⏱ **Duration:** {progress_bar}\n\n"
+        f"🙋 **Requested by:** {message.from_user.first_name}\n"
+        f"🔗 **API:** @sxyaru"
+    )
 # ----------------- REPLY TO AUDIO FILE PLAY -----------------
 @app.on_message(filters.command("rfplay", "."))
 async def rfplay_music(_, message):

@@ -118,6 +118,14 @@ def format_time(seconds: int):
     minutes, sec = divmod(seconds, 60)
     return f"{minutes}:{sec:02d}"
 
+def create_progress_bar(current, total, length=12):
+    """Return a progress bar like: ░░░🔘░░░"""
+    if total == 0:
+        total = 1
+    pos = int(length * current / total)
+    bar = "─" * pos + "•" + "─" * (length - pos)
+    return bar
+
 @app.on_message(filters.command("play", "."))
 async def play(client, message):
     try:
@@ -155,11 +163,8 @@ async def play(client, message):
     title = song.get("song") or "Unknown"
     artist = song.get("primary_artists") or song.get("singers") or "Unknown"
 
-    # Duration convert
     duration_sec = int(song.get("duration") or 0)
     duration_fmt = format_time(duration_sec)
-
-    progress_bar = f"0:00 ───•──── {duration_fmt}"
 
     # Join VC
     try:
@@ -186,14 +191,34 @@ async def play(client, message):
             except Exception as ee:
                 return await status_msg.edit(f"⚠️ Could not play in VC: {ee}")
 
-    await status_msg.edit(
+    # Initial message
+    progress_msg = await status_msg.edit(
         f"🎧 **Streaming started!**\n\n"
         f"🎵 **Title:** {title}\n"
         f"👤 **Artist:** {artist}\n"
-        f"⏱ **Duration:** {progress_bar}\n\n"
+        f"⏱ **Progress:** 0:00 ───•──── {duration_fmt}\n\n"
         f"🙋 **Requested by:** {message.from_user.first_name}\n"
         f"🔗 **API:** @sxyaru"
     )
+
+    # Update progress every 5 seconds
+    current_sec = 0
+    while current_sec <= duration_sec:
+        bar = create_progress_bar(current_sec, duration_sec, length=12)
+        current_fmt = format_time(current_sec)
+        try:
+            await progress_msg.edit(
+                f"🎧 **Streaming started!**\n\n"
+                f"🎵 **Title:** {title}\n"
+                f"👤 **Artist:** {artist}\n"
+                f"⏱ **Progress:** {current_fmt} {bar} {duration_fmt}\n\n"
+                f"🙋 **Requested by:** {message.from_user.first_name}\n"
+                f"🔗 **API:** @sxyaru"
+            )
+        except:
+            pass
+        await asyncio.sleep(5)
+        current_sec += 5
 # ----------------- REPLY TO AUDIO FILE PLAY -----------------
 @app.on_message(filters.command("rfplay", "."))
 async def rfplay_music(_, message):

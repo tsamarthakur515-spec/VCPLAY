@@ -121,14 +121,13 @@ async def play(client, message):
     except:
         pass
 
-    # Check query
     if len(message.command) < 2:
         return await message.reply(
-            "ɢɪᴠᴇ ǫᴜᴇʀʏ ᴛᴏ sᴇᴀʀᴄʜ\n\nExample:`.play mann mera`"
+            "ɢɪᴠᴇ ǫᴜᴇʀʏ ᴛᴏ sᴇᴀʀᴄʜ\n\nExample: `.play mann mera`"
         )
 
     query = message.text.split(None, 1)[1]
-    status_msg = await message.reply("`sᴇᴀʀᴄʜɪɴɢ ʏᴏᴜʀ ǫᴜᴇʀʏ 💿`")
+    status_msg = await message.reply("sᴇᴀʀᴄʜɪɴɢ ʏᴏᴜʀ ǫᴜᴇʀʏ 💿")
 
     # Fetch API results
     try:
@@ -145,8 +144,8 @@ async def play(client, message):
 
     song = results[0]
 
-    # Use correct media URL from API
-    stream_url = song.get("media_url")
+    # Correct media URL
+    stream_url = song.get("media_url") or song.get("vlink")
     title = song.get("song") or song.get("title", "Unknown")
     artist = song.get("primary_artists") or song.get("artist", "Unknown")
     duration = song.get("duration", "Unknown")
@@ -154,17 +153,36 @@ async def play(client, message):
     if not stream_url:
         return await status_msg.edit("❌ No playable link found!")
 
-    # Join VC or change stream
+    # Join VC or change stream with reconnect params
     try:
         await call.join_group_call(
             message.chat.id,
-            AudioPiped(stream_url, HighQualityAudio())
+            AudioPiped(
+                stream_url,
+                HighQualityAudio(),
+                ffmpeg_parameters=[
+                    "-reconnect", "1",
+                    "-reconnect_streamed", "1",
+                    "-reconnect_delay_max", "5"
+                ]
+            ),
+            muted=False
         )
+        # Optional: set volume
+        await call.set_my_volume(150)  # 1-200 scale
     except Exception:
         try:
             await call.change_stream(
                 message.chat.id,
-                AudioPiped(stream_url, HighQualityAudio())
+                AudioPiped(
+                    stream_url,
+                    HighQualityAudio(),
+                    ffmpeg_parameters=[
+                        "-reconnect", "1",
+                        "-reconnect_streamed", "1",
+                        "-reconnect_delay_max", "5"
+                    ]
+                )
             )
         except Exception as e:
             return await status_msg.edit(f"⚠️ Could not play in VC: {e}")

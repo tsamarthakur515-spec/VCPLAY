@@ -143,7 +143,6 @@ async def play(client, message):
         parse_mode="html"
     )
 
-
 # ----------------- REPLY TO AUDIO FILE PLAY -----------------
 @app.on_message(filters.command("rfplay", "."))
 async def rfplay_music(_, message):

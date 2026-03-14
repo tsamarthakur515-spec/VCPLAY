@@ -192,12 +192,19 @@ async def play(client, message):
         except Exception as e:
             return await searching.edit_text(f"VC Error: {e}")
 
-    await searching.edit_text(
+    # delete searching message
+    try:
+        await searching.delete()
+    except:
+        pass
+
+    # send playing message
+    await message.reply_text(
         f"▶️ <b>Playing</b>\n\n"
-        f"🎵 {title}\n"
-        f"👤 {artist}\n"
-        f"⏱ {duration}\n\n"
-        f"Requested by: {message.from_user.first_name}",
+        f"🎵 <b>{title}</b>\n"
+        f"👤 <b>{artist}</b>\n"
+        f"⏱ <b>{duration}</b>\n\n"
+        f"🙋 Requested by: {message.from_user.first_name}",
         parse_mode="html"
     )
 # ----------------- REPLY TO AUDIO FILE PLAY -----------------

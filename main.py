@@ -75,7 +75,7 @@ async def ping(client, message):
     ]
 
     for frame in frames:
-        await asyncio.sleep(0.3)
+        await asyncio.sleep(0.1)
         try:
             await msg.edit(f"⚡ Checking Bot Speed...\n\n{frame}")
         except:
@@ -99,12 +99,12 @@ async def ping(client, message):
 
     text = (
     f"<blockquote>"
-    f"╭─❖ <b>{name} Bot Status</b>\n"
-    f"├⚡ <b>Ping:</b> <code>{ping} ms</code>\n"
-    f"├⏱ <b>Uptime:</b> <code>{uptime}</code>\n"
-    f"├💻 <b>CPU:</b> <code>{cpu}%</code>\n"
-    f"├🎧 <b>VC:</b> {vc_status}\n"
-    f"╰🔗 <b>API:</b> <a href='https://t.me/sxyaru'>Aru x API Bots</a>"
+    f"╭─❖ <b>{name} ʙᴏᴛ sᴛᴀᴛᴜs</b>\n"
+    f"├⚡ <b>ᴘɪɴɢ:</b> <code>{ping} ms</code>\n"
+    f"├⏱ <b>ᴜᴘᴛɪᴍᴇ:</b> <code>{uptime}</code>\n"
+    f"├💻 <b>ᴄᴘᴜ:</b> <code>{cpu}%</code>\n"
+    f"├🎧 <b>ᴠᴄ:</b> {vc_status}\n"
+    f"╰🔗 <b>ᴀᴘɪ:</b> <a href='https://t.me/sxyaru'>ᴀʀᴜ × ᴀᴘɪ [ʙᴏᴛs]</a>"
     f"</blockquote>"
 )
 
@@ -121,10 +121,10 @@ async def play(client, message):
     except:
         pass
     if len(message.command) < 2:
-        return await message.reply("ᴋᴏɪ sᴏɴɢ ᴋᴀ ɴᴀᴍᴇ ʙᴀᴛᴀᴏ ɴᴀ ʙᴀʙᴜ 🤭\nExample: `.play mann mera`")
+        return await message.reply("ɢɪᴠᴇ ǫᴜᴇʀʏ ᴛᴏ sᴇᴀʀᴄʜ\n\nExample:`.play mann mera`")
 
     query = message.text.split(None, 1)[1]
-    await message.reply("sᴏɴɢ ᴘʟᴀʏ ʜᴏ ʀᴀʜᴀ ʜᴀɪ ᴛʜᴏᴅᴀ ᴡᴀɪᴛ ᴋɪᴊɪʏᴇ ɴᴀ ʙᴀʙᴜ 💋")
+    await message.reply("```sᴇᴀʀᴄʜɪɴɢ ʏᴏᴜʀ ǫᴜᴇʀʏ ʙᴀʙᴇ 💋```")
 
     try:
         async with aiohttp.ClientSession() as session:
@@ -136,7 +136,7 @@ async def play(client, message):
 
     results = data.get("results")
     if not results:
-        return await message.reply("ʏᴀ ᴡᴀʟᴀ sᴏɴɢ ᴍᴜᴊʜᴇ ɴᴀʜɪ ᴍɪʟᴀ ʀᴀʜᴀ ʜᴀɪ 🥺")
+        return await message.reply("ǫᴜᴇʀʏ ɴᴏᴛ ғᴏᴜɴᴅ")
 
     song = results[0]
 
@@ -160,15 +160,15 @@ async def play(client, message):
                 AudioPiped(stream_url, HighQualityAudio())
             )
         except Exception as e:
-            return await message.reply(f"⚠️ Could not play in VC: {e}")
+            return await message.reply(f"⚠️ ᴄᴏᴜʟᴅ ɴᴏᴛ ᴘʟᴀʏ ɪɴ ᴠᴄ: {e}")
 
     await message.reply(
-        f"🎧 Started Streaming\n\n"
-        f"🎵 Title: {title}\n"
-        f"👤 Artist: {artist}\n"
-        f"⏱ Duration: {duration}\n\n"
-        f"🙋 Requested by: {message.from_user.first_name}\n"
-        f"🔗 API by: https://t.me/sxyaru"
+        f"🎧 sᴛᴀʀᴛᴇᴅ sᴛʀᴇᴀᴍɪɴɢ\n\n"
+        f"🎵 ᴛɪᴛʟᴇ: {title}\n"
+        f"👤 ᴀʀᴛɪsᴛ: {artist}\n"
+        f"⏱ ᴅᴜʀᴀᴛɪᴏɴ: {duration}\n\n"
+        f"🙋 ʀᴇǫᴜᴇsᴛᴇᴅ ʙʏ: {message.from_user.first_name}\n"
+        f"🔗 ᴀᴘɪ:</b> <a href='https://t.me/sxyaru'>ᴀʀᴜ × ᴀᴘɪ [ʙᴏᴛs]</a>"
     )
 # ----------------- REPLY TO AUDIO FILE PLAY -----------------
 @app.on_message(filters.command("rfplay", "."))

@@ -23,28 +23,20 @@ BOT_START_TIME = datetime.now()
 
 # VOICE COMMAND
 @app.on_message(filters.command("level", "."))
-async def volume(client, message):
-
-    try:
-        await message.delete()
-    except:
-        pass
+async def level(client, message):
 
     if len(message.command) < 2:
-        return await client.send_message(
-            message.chat.id,
-            "Usage: .level 1-20"
-        )
+        return await message.reply("Usage: .level 1-20")
 
-    level = int(message.command[1])
+    try:
+        level = int(message.command[1])
+    except:
+        return await message.reply("Give number between 1 - 20")
 
     if level < 1 or level > 20:
-        return await client.send_message(
-            message.chat.id,
-            "Level must be between 1 - 20"
-        )
+        return await message.reply("Level must be between 1 - 20")
 
-    volume = level * 5   # convert to VC volume
+    volume = level * 5
 
     try:
         await call.change_volume_call(
@@ -52,15 +44,9 @@ async def volume(client, message):
             volume
         )
     except Exception as e:
-        return await client.send_message(
-            message.chat.id,
-            f"VC Error: {e}"
-        )
+        return await message.reply(f"VC Error: {e}")
 
-    await client.send_message(
-        message.chat.id,
-        f"🔊 Voice level set to {level}"
-    )
+    await message.reply(f"🔊 Volume set to {level}")
 #PINH COMMAND
 
 @app.on_message(filters.command("ping", "."))

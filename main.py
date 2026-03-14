@@ -130,53 +130,33 @@ async def ping(client, message):
 # ----------------- PLAY COMMAND -----------------
 @app.on_message(filters.command("play", "."))
 async def play(client, message):
-
-    try:
-        await message.delete()
-    except:
-        pass
-
-    # Check query
     if len(message.command) < 2:
-        return await message.reply_text(
-            "Give song name\n\n.play <song name>",
-            quote=True
-        )
+        return await message.reply("ᴋᴏɪ sᴏɴɢ ᴋᴀ ɴᴀᴍᴇ ʙᴀᴛᴀᴏ ɴᴀ ʙᴀʙᴜ 🤭\nExample: `.play mann mera`")
 
-    query = " ".join(message.command[1:])
-
-    searching = await message.reply_text(
-        "🔎 Searching song...",
-        quote=True
-    )
+    query = message.text.split(None, 1)[1]
+    await message.reply("sᴏɴɢ ᴘʟᴀʏ ʜᴏ ʀᴀʜᴀ ʜᴀɪ ᴛʜᴏᴅᴀ ᴡᴀɪᴛ ᴋɪᴊɪʏᴇ ɴᴀ ʙᴀʙᴜ 💋")
 
     try:
         async with aiohttp.ClientSession() as session:
-            url = f"https://flip-saavn.vercel.app/search?query={quote(query)}"
+            url = f"https://flip-saavn.vercel.app/search?query={query}"
             async with session.get(url) as resp:
                 data = await resp.json()
     except Exception as e:
-        return await searching.edit_text(f"API Error: {e}")
+        return await message.reply(f"⚠️ Failed to fetch API: {e}")
 
     results = data.get("results")
-
     if not results:
-        return await searching.edit_text("❌ No results found!")
+        return await message.reply("ʏᴀ ᴡᴀʟᴀ sᴏɴɢ ᴍᴜᴊʜᴇ ɴᴀʜɪ ᴍɪʟᴀ ʀᴀʜᴀ ʜᴀɪ 🥺")
 
     song = results[0]
 
-    stream_url = (
-        song.get("download", {}).get("320kbps")
-        or song.get("download", {}).get("160kbps")
-        or song.get("download", {}).get("128kbps")
-    )
-
+    stream_url = song["download"].get("320kbps") or song["download"].get("160kbps")
     title = song.get("title", "Unknown")
     artist = song.get("artist", "Unknown")
     duration = song.get("duration", "Unknown")
 
     if not stream_url:
-        return await searching.edit_text("❌ No playable link")
+        return await message.reply("❌ No playable link found!")
 
     try:
         await call.join_group_call(
@@ -190,22 +170,15 @@ async def play(client, message):
                 AudioPiped(stream_url, HighQualityAudio())
             )
         except Exception as e:
-            return await searching.edit_text(f"VC Error: {e}")
+            return await message.reply(f"⚠️ Could not play in VC: {e}")
 
-    # delete searching message
-    try:
-        await searching.delete()
-    except:
-        pass
-
-    # send playing message
-    await message.reply_text(
-        f"▶️ <b>Playing</b>\n\n"
-        f"🎵 <b>{title}</b>\n"
-        f"👤 <b>{artist}</b>\n"
-        f"⏱ <b>{duration}</b>\n\n"
-        f"🙋 Requested by: {message.from_user.first_name}",
-        parse_mode="html"
+    await message.reply(
+        f"🎧 Started Streaming\n\n"
+        f"🎵 Title: {title}\n"
+        f"👤 Artist: {artist}\n"
+        f"⏱ Duration: {duration}\n\n"
+        f"🙋 Requested by: {message.from_user.first_name}\n"
+        f"🔗 API by: https://t.me/sxyaru"
     )
 # ----------------- REPLY TO AUDIO FILE PLAY -----------------
 @app.on_message(filters.command("rfplay", "."))

@@ -107,11 +107,11 @@ async def play(client, message):
 
     query = " ".join(message.command[1:])
 
-    searching = await message.reply_text(
-        "<blockquote>🔎 Searching song...</blockquote>",
-        parse_mode="html",
-        quote=True
-    )
+    searching = await client.send_message(
+    message.chat.id,
+    "<blockquote>🔎 Searching song...</blockquote>",
+    parse_mode="html"
+)
 
     try:
         async with aiohttp.ClientSession() as session:

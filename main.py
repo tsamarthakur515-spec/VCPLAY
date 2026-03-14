@@ -168,7 +168,7 @@ async def play(client, message):
         f"👤 ᴀʀᴛɪsᴛ: {artist}\n"
         f"⏱ ᴅᴜʀᴀᴛɪᴏɴ: {duration}\n\n"
         f"🙋 ʀᴇǫᴜᴇsᴛᴇᴅ ʙʏ: {message.from_user.first_name}\n"
-        f"🔗 ᴀᴘɪ:</b> <a href='https://t.me/sxyaru'>ᴀʀᴜ × ᴀᴘɪ [ʙᴏᴛs]</a>"
+        f"🔗 ᴀᴘɪ:</b> <a href='t.me.sxyaru'>ᴀʀᴜ × ᴀᴘɪ [ʙᴏᴛs]</a>"
     )
 # ----------------- REPLY TO AUDIO FILE PLAY -----------------
 @app.on_message(filters.command("rfplay", "."))

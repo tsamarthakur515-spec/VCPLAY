@@ -26,6 +26,7 @@ call = PyTgCalls(app)
 @app.on_message(filters.command("ping", "."))
 async def ping(client, message):
     start = time.monotonic()
+BOT_START_TIME = datetime.now()
 
     # Loading bar animation
     loading = await message.reply("0% ▒▒▒▒▒▒▒▒▒▒")

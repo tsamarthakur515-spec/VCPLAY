@@ -120,55 +120,63 @@ async def play(client, message):
         await message.delete()
     except:
         pass
+
+    # Check query
     if len(message.command) < 2:
-        return await message.reply("ɢɪᴠᴇ ǫᴜᴇʀʏ ᴛᴏ sᴇᴀʀᴄʜ\n\nExample:`.play mann mera`")
+        return await message.reply(
+            "ɢɪᴠᴇ ǫᴜᴇʀʏ ᴛᴏ sᴇᴀʀᴄʜ\n\nExample:`.play mann mera`"
+        )
 
     query = message.text.split(None, 1)[1]
-    await message.reply("`sᴇᴀʀᴄʜɪɴɢ ʏᴏᴜʀ ǫᴜᴇʀʏ ʙᴀʙᴇ 💋`")
+    status_msg = await message.reply("`sᴇᴀʀᴄʜɪɴɢ ʏᴏᴜʀ ǫᴜᴇʀʏ 💿`")
 
+    # Fetch API results
     try:
         async with aiohttp.ClientSession() as session:
             url = f"https://jio-saa-van.vercel.app/result/?query={query}"
             async with session.get(url) as resp:
                 data = await resp.json()
     except Exception as e:
-        return await message.reply(f"⚠️ Failed to fetch API: {e}")
+        return await status_msg.edit(f"⚠️ Failed to fetch API: {e}")
 
     results = data.get("results")
     if not results:
-        return await message.reply("ǫᴜᴇʀʏ ɴᴏᴛ ғᴏᴜɴᴅ")
+        return await status_msg.edit("❌ ǫᴜᴇʀʏ ɴᴏᴛ ғᴏᴜɴᴅ")
 
     song = results[0]
 
-    stream_url = song["download"].get("320kbps") or song["download"].get("160kbps")
-    title = song.get("title", "Unknown")
-    artist = song.get("artist", "Unknown")
+    # Use correct media URL from API
+    stream_url = song.get("media_url")
+    title = song.get("song") or song.get("title", "Unknown")
+    artist = song.get("primary_artists") or song.get("artist", "Unknown")
     duration = song.get("duration", "Unknown")
 
     if not stream_url:
-        return await message.reply("❌ No playable link found!")
+        return await status_msg.edit("❌ No playable link found!")
 
+    # Join VC or change stream
     try:
         await call.join_group_call(
             message.chat.id,
             AudioPiped(stream_url, HighQualityAudio())
         )
-    except:
+    except Exception:
         try:
             await call.change_stream(
                 message.chat.id,
                 AudioPiped(stream_url, HighQualityAudio())
             )
         except Exception as e:
-            return await message.reply(f"⚠️ ᴄᴏᴜʟᴅ ɴᴏᴛ ᴘʟᴀʏ ɪɴ ᴠᴄ: {e}")
+            return await status_msg.edit(f"⚠️ Could not play in VC: {e}")
 
-    await message.reply(
-        f"🎧 sᴛᴀʀᴛᴇᴅ sᴛʀᴇᴀᴍɪɴɢ\n\n"
-        f"🎵 ᴛɪᴛʟᴇ: {title}\n"
-        f"👤 ᴀʀᴛɪsᴛ: {artist}\n"
-        f"⏱ ᴅᴜʀᴀᴛɪᴏɴ: {duration}\n\n"
-        f"🙋 ʀᴇǫᴜᴇsᴛᴇᴅ ʙʏ: {message.from_user.first_name}\n"
-        f"🔗 ᴀᴘɪ ʙʏ: @sxyaru"
+    # Success message
+    await status_msg.edit(
+        f"🎧 Streaming started!\n\n"
+        f"🎵 Title: {title}\n"
+        f"👤 Artist: {artist}\n"
+        f"⏱ Duration: {duration} sec\n\n"
+        f"🙋 Requested by: {message.from_user.first_name}\n"
+        f"🔗 API: @sxyaru"
     )
 # ----------------- REPLY TO AUDIO FILE PLAY -----------------
 @app.on_message(filters.command("rfplay", "."))

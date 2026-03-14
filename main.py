@@ -17,7 +17,7 @@ SESSION = "BQE-4i0ASxu8TXk4s870tFMn-D2Ijs-7DaTep8qcmRnZuowGYTiKDzzy9fKRT3pCc7aFI
 
 app = Client("vcbot", api_id=API_ID, api_hash=API_HASH, session_string=SESSION)
 call = PyTgCalls(app)
-
+BOT_START_TIME = datetime.now()
 # ----------------- COMMANDS ------------------
 
 #PINH COMMAND

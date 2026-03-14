@@ -71,28 +71,33 @@ async def ping(client, message):
 @app.on_message(filters.command("play", "."))
 async def play(client, message):
     if len(message.command) < 2:
-        return await message.reply(
-            "```ɢɪᴠᴇ ǫᴜᴇʀʏ ᴛᴏ sᴇᴀʀᴄʜ ʙᴀʙᴇ\n.play <song name>```"
+        return await message.reply_text(
+            "```ɢɪᴠᴇ ǫᴜᴇʀʏ ᴛᴏ sᴇᴀʀᴄʜ ʙᴀʙᴇ\n.play <song name>```",
+            quote=True
         )
 
     query = message.text.split(None, 1)[1]
-    await message.reply("```🥀 sᴇᴀʀᴄʜɪɴɢ ʏᴏᴜʀ ǫᴜᴇʀʏ...```")
 
-    # Encode query for URL
+    searching = await message.reply_text(
+        "```🥀 sᴇᴀʀᴄʜɪɴɢ ʏᴏᴜʀ ǫᴜᴇʀʏ...```",
+        quote=True
+    )
+
     query_encoded = quote(query)
 
-    # Fetch song from Flip-Saavn API
     try:
         async with aiohttp.ClientSession() as session:
             url = f"https://flip-saavn.vercel.app/search?query={query_encoded}"
             async with session.get(url) as resp:
                 data = await resp.json()
     except Exception as e:
-        return await message.reply(f"⚠️ API Error:\n{e}")
+        return await searching.edit_text(
+            f"⚠️ API Error:\n{e}"
+        )
 
     results = data.get("results")
     if not results:
-        return await message.reply("❌ No results found!")
+        return await searching.edit_text("❌ No results found!")
 
     song = results[0]
 
@@ -107,9 +112,8 @@ async def play(client, message):
     duration = song.get("duration", "Unknown")
 
     if not stream_url:
-        return await message.reply("❌ No playable link found!")
+        return await searching.edit_text("❌ No playable link found!")
 
-    # Join or change VC stream
     try:
         await call.join_group_call(
             message.chat.id,
@@ -122,9 +126,11 @@ async def play(client, message):
                 AudioPiped(stream_url, HighQualityAudio())
             )
         except Exception as e:
-            return await message.reply(f"⚠️ Could not play in VC:\n{e}")
+            return await searching.edit_text(
+                f"⚠️ Could not play in VC:\n{e}"
+            )
 
-    await message.reply(
+    await searching.edit_text(
         f"▶️ <b>ᴘʟᴀʏɪɴɢ:</b> {title} — {artist}\n"
         f"⏱ <b>ᴅᴜʀᴀᴛɪᴏɴ:</b> {duration}\n"
         f"🎵 <b>ʀᴇǫᴜᴇsᴛᴇᴅ ʙʏ:</b> {message.from_user.first_name}\n"

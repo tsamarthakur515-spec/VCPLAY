@@ -123,11 +123,11 @@ async def play(client, message):
 
     if len(message.command) < 2:
         return await message.reply(
-            "ɢɪᴠᴇ ǫᴜᴇʀʏ ᴛᴏ sᴇᴀʀᴄʜ\n\nExample: `.play mann mera`"
+            "ɢɪᴠᴇ ǫᴜᴇʀʏ ᴛᴏ sᴇᴀʀᴄʜ\nExample: `.play mann mera`"
         )
 
     query = message.text.split(None, 1)[1]
-    status_msg = await message.reply("sᴇᴀʀᴄʜɪɴɢ ʏᴏᴜʀ ǫᴜᴇʀʏ 💿")
+    status_msg = await message.reply("`sᴇᴀʀᴄʜɪɴɢ ʏᴏᴜʀ ǫᴜᴇʀʏ 💿`")
 
     # Fetch API results
     try:
@@ -138,61 +138,50 @@ async def play(client, message):
     except Exception as e:
         return await status_msg.edit(f"⚠️ Failed to fetch API: {e}")
 
-    results = data.get("results")
+    results = data
     if not results:
-        return await status_msg.edit("❌ ǫᴜᴇʀʏ ɴᴏᴛ ғᴏᴜɴᴅ")
+        return await status_msg.edit("❌ Query not found!")
 
     song = results[0]
 
-    # Correct media URL
-    stream_url = song.get("media_url") or song.get("vlink")
-    title = song.get("song") or song.get("title", "Unknown")
-    artist = song.get("primary_artists") or song.get("artist", "Unknown")
+    # Get vlink (MP3) instead of media_url
+    stream_url = song.get("vlink")
+    title = song.get("song", "Unknown")
+    artist = song.get("primary_artists", "Unknown")
     duration = song.get("duration", "Unknown")
 
     if not stream_url:
         return await status_msg.edit("❌ No playable link found!")
 
-    # Join VC or change stream with reconnect params
+    # FFmpeg options to avoid freezing
+    ffmpeg_opts = [
+        "-reconnect", "1",
+        "-reconnect_streamed", "1",
+        "-reconnect_delay_max", "5",
+        "-vn"  # ignore video
+    ]
+
+    # Play in VC
     try:
         await call.join_group_call(
             message.chat.id,
-            AudioPiped(
-                stream_url,
-                HighQualityAudio(),
-                ffmpeg_parameters=[
-                    "-reconnect", "1",
-                    "-reconnect_streamed", "1",
-                    "-reconnect_delay_max", "5"
-                ]
-            ),
+            AudioPiped(stream_url, HighQualityAudio(ffmpeg_parameters=ffmpeg_opts)),
             muted=False
         )
-        # Optional: set volume
-        await call.set_my_volume(150)  # 1-200 scale
     except Exception:
         try:
             await call.change_stream(
                 message.chat.id,
-                AudioPiped(
-                    stream_url,
-                    HighQualityAudio(),
-                    ffmpeg_parameters=[
-                        "-reconnect", "1",
-                        "-reconnect_streamed", "1",
-                        "-reconnect_delay_max", "5"
-                    ]
-                )
+                AudioPiped(stream_url, HighQualityAudio(ffmpeg_parameters=ffmpeg_opts))
             )
         except Exception as e:
             return await status_msg.edit(f"⚠️ Could not play in VC: {e}")
 
-    # Success message
     await status_msg.edit(
-        f"🎧 Streaming started!\n\n"
+        f"🎧 Streaming started!\n"
         f"🎵 Title: {title}\n"
         f"👤 Artist: {artist}\n"
-        f"⏱ Duration: {duration} sec\n\n"
+        f"⏱ Duration: {duration} sec\n"
         f"🙋 Requested by: {message.from_user.first_name}\n"
         f"🔗 API: @sxyaru"
     )

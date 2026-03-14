@@ -130,6 +130,10 @@ async def ping(client, message):
 # ----------------- PLAY COMMAND -----------------
 @app.on_message(filters.command("play", "."))
 async def play(client, message):
+    try:
+        await message.delete()
+    except:
+        pass
     if len(message.command) < 2:
         return await message.reply("ᴋᴏɪ sᴏɴɢ ᴋᴀ ɴᴀᴍᴇ ʙᴀᴛᴀᴏ ɴᴀ ʙᴀʙᴜ 🤭\nExample: `.play mann mera`")
 

@@ -40,6 +40,9 @@ async def ping(client, message):
         await asyncio.sleep(delay)
         await loading.edit(text)
 
+    # Small pause to ensure final edit works
+    await asyncio.sleep(0.2)
+
     # Calculate ping and uptime
     end = time.monotonic()
     ping_ms = round((end - start) * 1000, 1)
@@ -66,11 +69,10 @@ async def ping(client, message):
         f"├• ╰☞ 𝐔ᴘᴛɪᴍᴇ: {uptime}\n"
         f"├• ╰☞ 💻 CPU: {cpu_percent}%\n"
         f"├• ╰☞ 🎵 PyTgCalls: {pytgcalls_status}\n"
-        f"└• ╰☞ API by: [JioSaavn](https://t.me/sxyaru)"
+        f"└• ╰☞ API by: [JioSaavn](https://flip-saavn.vercel.app/)"
     )
 
     await loading.edit(final_msg)
-
 # ----------------- PLAY COMMAND -----------------
 @app.on_message(filters.command("play", "."))
 async def play(client, message):

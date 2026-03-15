@@ -1,3 +1,4 @@
+import yt_dlp
 import time
 import psutil
 from urllib.parse import quote

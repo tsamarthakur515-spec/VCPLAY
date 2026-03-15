@@ -214,75 +214,36 @@ async def play(client, message):
 
 #VIDEO PLAYING FUNCTION
 
+
 @app.on_message(filters.command("vplay", "."))
 async def vplay(client, message):
-
-    try:
-        await message.delete()
-    except:
-        pass
 
     if len(message.command) < 2:
         return await message.reply("Example: `.vplay kesariya`")
 
-    query = message.text.split(None, 1)[1]
+    query = message.text.split(None,1)[1]
 
-    msg = await message.reply("🔎 Searching video...")
+    msg = await message.reply("🔎 Searching...")
 
-    # SEARCH API
-    try:
-        async with aiohttp.ClientSession() as session:
-            url = f"https://ytmusicapi-i9py.onrender.com/search?q={quote(query)}"
-            async with session.get(url) as resp:
-                data = await resp.json()
-    except Exception as e:
-        return await msg.edit(f"❌ API Error: {e}")
+    async with aiohttp.ClientSession() as session:
+        async with session.get(f"https://your-api.onrender.com/play?q={quote(query)}") as r:
+            data = await r.json()
 
-    title = data.get("title")
-    video_url = data.get("video_url")
-    thumbnail = data.get("thumbnail")
-    duration = data.get("duration")
+    stream = data["stream"]
+    title = data["title"]
+    thumb = data["thumbnail"]
 
-    if not video_url:
-        return await msg.edit("❌ Video not found")
-
-    # STREAM API
-    try:
-        async with aiohttp.ClientSession() as session:
-            url = f"https://ytmusicapi-i9py.onrender.com/stream?url={video_url}"
-            async with session.get(url) as resp:
-                stream_data = await resp.json()
-    except Exception as e:
-        return await msg.edit(f"❌ Stream Error: {e}")
-
-    stream = stream_data.get("stream")
-
-    if not stream:
-        return await msg.edit("❌ Stream link not found")
-
-    try:
-        await call.join_group_call(
-            message.chat.id,
-            AudioPiped(stream, HighQualityAudio())
-        )
-    except:
-        await call.change_stream(
-            message.chat.id,
-            AudioPiped(stream, HighQualityAudio())
-        )
-
-    text = (
-        f"📺 **Video Streaming Started**\n\n"
-        f"🎬 **Title:** {title}\n"
-        f"⏱ **Duration:** {duration}s\n"
-        f"🙋 **Requested by:** {message.from_user.first_name}"
+    await call.join_group_call(
+        message.chat.id,
+        AudioPiped(stream, HighQualityAudio())
     )
 
-    if thumbnail:
-        await msg.delete()
-        await message.reply_photo(thumbnail, caption=text)
-    else:
-        await msg.edit(text)
+    await msg.delete()
+
+    await message.reply_photo(
+        thumb,
+        caption=f"📺 **Video Playing**\n\n🎬 {title}"
+    )
 
 # ----------------- REPLY TO AUDIO FILE PLAY -----------------
 @app.on_message(filters.command("rfplay", "."))

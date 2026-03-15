@@ -226,7 +226,7 @@ async def vplay(client, message):
     msg = await message.reply("🔎 Searching...")
 
     async with aiohttp.ClientSession() as session:
-        async with session.get(f"https://your-api.onrender.com/play?q={quote(query)}") as r:
+        async with session.get(f"https://ytmusicapi-i9py.onrender.com/play?q={quote(query)}") as r:
             data = await r.json()
 
     stream = data["stream"]

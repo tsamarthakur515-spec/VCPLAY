@@ -215,60 +215,6 @@ async def play(client, message):
 #VIDEO PLAYING FUNCTION
 
 
-@app.on_message(filters.command("vplay", "."))
-async def vplay(client, message):
-
-    if len(message.command) < 2:
-        return await message.reply("Example: `.vplay kesariya`")
-
-    query = message.text.split(None,1)[1]
-    msg = await message.reply("🔎 Searching video...")
-
-    # SEARCH VIDEO
-    try:
-        async with aiohttp.ClientSession() as session:
-            search_url = f"http://api.nubcoder.com/search?q={quote(query)}"
-            async with session.get(search_url) as r:
-                search = await r.json()
-
-        video = search["results"][0]
-        video_url = video["url"]
-        title = video["title"]
-        thumb = video["thumbnail"]
-
-    except Exception as e:
-        return await msg.edit(f"❌ Search Error: {e}")
-
-    # GET STREAM
-    try:
-        async with aiohttp.ClientSession() as session:
-            api = f"http://api.nubcoder.com/video-stream?token=pePKYb9ltY&q={quote(video_url)}"
-            async with session.get(api) as r:
-                data = await r.json()
-
-        audio_stream = data["audio"]
-
-    except Exception as e:
-        return await msg.edit(f"⚠️ Stream API Error: {e}")
-
-    # PLAY IN VC
-    try:
-        await call.join_group_call(
-            message.chat.id,
-            AudioPiped(audio_stream, HighQualityAudio())
-        )
-    except:
-        await call.change_stream(
-            message.chat.id,
-            AudioPiped(audio_stream, HighQualityAudio())
-        )
-
-    await msg.delete()
-
-    await message.reply_photo(
-        thumb,
-        caption=f"📺 **Video Playing**\n\n🎬 {title}\n🙋 Requested by: {message.from_user.first_name}"
-    )
 
 # ----------------- REPLY TO AUDIO FILE PLAY -----------------
 @app.on_message(filters.command("rfplay", "."))

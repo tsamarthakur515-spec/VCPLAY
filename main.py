@@ -217,49 +217,57 @@ async def play(client, message):
 
 @app.on_message(filters.command("vplay", "."))
 async def vplay(client, message):
+
     if len(message.command) < 2:
         return await message.reply("Example: `.vplay kesariya`")
 
-    query = message.text.split(None, 1)[1]
+    query = message.text.split(None,1)[1]
     msg = await message.reply("🔎 Searching video...")
 
-    # Step 1: Search YouTube via yt_dlp
-    try:
-        ydl_opts = {"quiet": True, "format": "best", "noplaylist": True}
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(f"ytsearch:{query}", download=False)['entries'][0]
-            video_url = info['webpage_url']
-            title = info.get('title', "Unknown")
-            thumb = info.get('thumbnail')
-    except Exception as e:
-        return await msg.edit(f"❌ Could not search video: {e}")
-
-    # Step 2: Get video + audio streams from Nubcoder
+    # SEARCH VIDEO
     try:
         async with aiohttp.ClientSession() as session:
-            api_url = f"http://api.nubcoder.com/video-stream?token=pePKYb9ltY&q={quote(video_url)}"
-            async with session.get(api_url) as r:
-                data = await r.json()
-                video_stream = data.get("video")  # video URL
-                audio_stream = data.get("audio")  # audio URL
-                if not video_stream or not audio_stream:
-                    return await msg.edit("❌ Could not get video/audio streams from API")
-    except Exception as e:
-        return await msg.edit(f"⚠️ API Error: {e}")
+            search_url = f"http://api.nubcoder.com/search?q={quote(query)}"
+            async with session.get(search_url) as r:
+                search = await r.json()
 
-    # Step 3: Join VC and play audio (PyTgCalls currently only supports audio)
+        video = search["results"][0]
+        video_url = video["url"]
+        title = video["title"]
+        thumb = video["thumbnail"]
+
+    except Exception as e:
+        return await msg.edit(f"❌ Search Error: {e}")
+
+    # GET STREAM
+    try:
+        async with aiohttp.ClientSession() as session:
+            api = f"http://api.nubcoder.com/video-stream?token=pePKYb9ltY&q={quote(video_url)}"
+            async with session.get(api) as r:
+                data = await r.json()
+
+        audio_stream = data["audio"]
+
+    except Exception as e:
+        return await msg.edit(f"⚠️ Stream API Error: {e}")
+
+    # PLAY IN VC
     try:
         await call.join_group_call(
             message.chat.id,
             AudioPiped(audio_stream, HighQualityAudio())
         )
-    except Exception as e:
-        return await msg.edit(f"⚠️ Could not join VC: {e}")
+    except:
+        await call.change_stream(
+            message.chat.id,
+            AudioPiped(audio_stream, HighQualityAudio())
+        )
 
     await msg.delete()
+
     await message.reply_photo(
         thumb,
-        caption=f"📺 **Video Requested**\n🎬 {title}\n🙋 Requested by: {message.from_user.first_name}\n🔗 Streams: Video+Audio"
+        caption=f"📺 **Video Playing**\n\n🎬 {title}\n🙋 Requested by: {message.from_user.first_name}"
     )
 
 # ----------------- REPLY TO AUDIO FILE PLAY -----------------

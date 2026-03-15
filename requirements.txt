@@ -4,3 +4,5 @@ tgcrypto
 yt-dlp
 py-tgcalls==0.9.7
 ffmpeg
+yt_dlp
+youtube-search-python

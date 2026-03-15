@@ -229,9 +229,10 @@ async def vplay(client, message):
 
     msg = await message.reply("🔎 Searching video...")
 
+    # SEARCH API
     try:
         async with aiohttp.ClientSession() as session:
-            url = f"http://127.0.0.1:5000/search?q={quote(query)}"
+            url = f"https://ytmusicapi-i9py.onrender.com/search?q={quote(query)}"
             async with session.get(url) as resp:
                 data = await resp.json()
     except Exception as e:
@@ -239,20 +240,25 @@ async def vplay(client, message):
 
     title = data.get("title")
     video_url = data.get("video_url")
+    thumbnail = data.get("thumbnail")
+    duration = data.get("duration")
 
     if not video_url:
         return await msg.edit("❌ Video not found")
 
-    # Get direct stream using API
+    # STREAM API
     try:
         async with aiohttp.ClientSession() as session:
-            url = f"http://127.0.0.1:5000/stream?url={video_url}"
+            url = f"https://ytmusicapi-i9py.onrender.com/stream?url={video_url}"
             async with session.get(url) as resp:
                 stream_data = await resp.json()
     except Exception as e:
         return await msg.edit(f"❌ Stream Error: {e}")
 
     stream = stream_data.get("stream")
+
+    if not stream:
+        return await msg.edit("❌ Stream link not found")
 
     try:
         await call.join_group_call(
@@ -265,11 +271,18 @@ async def vplay(client, message):
             AudioPiped(stream, HighQualityAudio())
         )
 
-    await msg.edit(
+    text = (
         f"📺 **Video Streaming Started**\n\n"
         f"🎬 **Title:** {title}\n"
+        f"⏱ **Duration:** {duration}s\n"
         f"🙋 **Requested by:** {message.from_user.first_name}"
     )
+
+    if thumbnail:
+        await msg.delete()
+        await message.reply_photo(thumbnail, caption=text)
+    else:
+        await msg.edit(text)
 
 # ----------------- REPLY TO AUDIO FILE PLAY -----------------
 @app.on_message(filters.command("rfplay", "."))

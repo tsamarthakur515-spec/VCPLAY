@@ -209,6 +209,67 @@ async def play(client, message):
         f"🙋 **Requested by:** {message.from_user.first_name}\n"
         f"🔗 **API:** @sxyaru"
     )
+
+
+#VIDEO PLAYING FUNCTION
+
+@app.on_message(filters.command("vplay", "."))
+async def vplay(client, message):
+
+    try:
+        await message.delete()
+    except:
+        pass
+
+    if len(message.command) < 2:
+        return await message.reply("Example: `.vplay kesariya`")
+
+    query = message.text.split(None, 1)[1]
+
+    msg = await message.reply("🔎 Searching video...")
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            url = f"http://127.0.0.1:5000/search?q={quote(query)}"
+            async with session.get(url) as resp:
+                data = await resp.json()
+    except Exception as e:
+        return await msg.edit(f"❌ API Error: {e}")
+
+    title = data.get("title")
+    video_url = data.get("video_url")
+
+    if not video_url:
+        return await msg.edit("❌ Video not found")
+
+    # Get direct stream using API
+    try:
+        async with aiohttp.ClientSession() as session:
+            url = f"http://127.0.0.1:5000/stream?url={video_url}"
+            async with session.get(url) as resp:
+                stream_data = await resp.json()
+    except Exception as e:
+        return await msg.edit(f"❌ Stream Error: {e}")
+
+    stream = stream_data.get("stream")
+
+    try:
+        await call.join_group_call(
+            message.chat.id,
+            AudioPiped(stream, HighQualityAudio())
+        )
+    except:
+        await call.change_stream(
+            message.chat.id,
+            AudioPiped(stream, HighQualityAudio())
+        )
+
+    await msg.edit(
+        f"📺 **Video Streaming Started**\n\n"
+        f"🎬 **Title:** {title}\n"
+        f"🙋 **Requested by:** {message.from_user.first_name}"
+    )
+
 # ----------------- REPLY TO AUDIO FILE PLAY -----------------
 @app.on_message(filters.command("rfplay", "."))
 async def rfplay_music(_, message):

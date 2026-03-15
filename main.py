@@ -217,32 +217,49 @@ async def play(client, message):
 
 @app.on_message(filters.command("vplay", "."))
 async def vplay(client, message):
-
     if len(message.command) < 2:
         return await message.reply("Example: `.vplay kesariya`")
 
-    query = message.text.split(None,1)[1]
+    query = message.text.split(None, 1)[1]
+    msg = await message.reply("🔎 Searching video...")
 
-    msg = await message.reply("🔎 Searching...")
+    # Step 1: Search YouTube via yt_dlp
+    try:
+        ydl_opts = {"quiet": True, "format": "best", "noplaylist": True}
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(f"ytsearch:{query}", download=False)['entries'][0]
+            video_url = info['webpage_url']
+            title = info.get('title', "Unknown")
+            thumb = info.get('thumbnail')
+    except Exception as e:
+        return await msg.edit(f"❌ Could not search video: {e}")
 
-    async with aiohttp.ClientSession() as session:
-        async with session.get(f"https://ytmusicapi-i9py.onrender.com/play?q={quote(query)}") as r:
-            data = await r.json()
+    # Step 2: Get video + audio streams from Nubcoder
+    try:
+        async with aiohttp.ClientSession() as session:
+            api_url = f"http://api.nubcoder.com/video-stream?token=pePKYb9ltY&q={quote(video_url)}"
+            async with session.get(api_url) as r:
+                data = await r.json()
+                video_stream = data.get("video")  # video URL
+                audio_stream = data.get("audio")  # audio URL
+                if not video_stream or not audio_stream:
+                    return await msg.edit("❌ Could not get video/audio streams from API")
+    except Exception as e:
+        return await msg.edit(f"⚠️ API Error: {e}")
 
-    stream = data["stream"]
-    title = data["title"]
-    thumb = data["thumbnail"]
-
-    await call.join_group_call(
-        message.chat.id,
-        AudioPiped(stream, HighQualityAudio())
-    )
+    # Step 3: Join VC and play audio (PyTgCalls currently only supports audio)
+    try:
+        await call.join_group_call(
+            message.chat.id,
+            AudioPiped(audio_stream, HighQualityAudio())
+        )
+    except Exception as e:
+        return await msg.edit(f"⚠️ Could not join VC: {e}")
 
     await msg.delete()
-
     await message.reply_photo(
         thumb,
-        caption=f"📺 **Video Playing**\n\n🎬 {title}"
+        caption=f"📺 **Video Requested**\n🎬 {title}\n🙋 Requested by: {message.from_user.first_name}\n🔗 Streams: Video+Audio"
     )
 
 # ----------------- REPLY TO AUDIO FILE PLAY -----------------

@@ -143,7 +143,7 @@ def format_time(seconds: int):
     minutes, sec = divmod(seconds, 60)
     return f"{minutes}:{sec:02d}"
 
-@app.on_message(filters.command("play", "."))
+@bot.on_message(filters.command("play"))
 async def play(client, message):
     try:
         await message.delete()

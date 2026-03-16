@@ -110,12 +110,12 @@ async def ping(client, message):
 
     text = (
     f"<blockquote>"
-    f"鈺攢鉂� <b>{name} 蕶岽忈礇 s岽涐磤岽涐礈s</b>\n"
-    f"鈹溾殹 <b>岽樕瓷�:</b> <code>{ping} ms</code>\n"
-    f"鈹溾彵 <b>岽溼礃岽浬磵岽�:</b> <code>{uptime}</code>\n"
-    f"鈹滒煉� <b>岽勧礃岽�:</b> <code>{cpu}%</code>\n"
-    f"鈹滒煄� <b>岽犪磩:</b> {vc_status}\n"
-    f"鈺梆煍� <b>岽�岽樕�:</b> <a href='https://t.me/sxyaru'>岽�蕗岽� 脳 岽�岽樕� [蕶岽忈礇s]</a>"
+    f"╭─❖ <b>{name} ʙᴏᴛ sᴛᴀᴛᴜs</b>\n"
+    f"├⚡ <b>ᴘɪɴɢ:</b> <code>{ping} ms</code>\n"
+    f"├⏱ <b>ᴜᴘᴛɪᴍᴇ:</b> <code>{uptime}</code>\n"
+    f"├💻 <b>ᴄᴘᴜ:</b> <code>{cpu}%</code>\n"
+    f"├🎧 <b>ᴠᴄ:</b> {vc_status}\n"
+    f"╰🔗 <b>ᴀᴘɪ:</b> <a href='https://t.me/sxyaru'>ᴀʀᴜ × ᴀᴘɪ [ʙᴏᴛs]</a>"
     f"</blockquote>"
 )
 

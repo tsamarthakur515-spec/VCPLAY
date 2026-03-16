@@ -265,7 +265,7 @@ async def rfplay_music(_, message):
     else:
         return await message.reply("❌ Please reply to an audio or voice message to play it.")
 
-@bot.on_message(filters.command("stop"))
+@app.on_message(filters.command("stop", "."))
 async def stop(client, message):
     try:
         await message.delete()
@@ -273,9 +273,9 @@ async def stop(client, message):
         pass
     try:
         await call.leave_group_call(message.chat.id)
-        await message.reply("鈴� Stopped")
+        await message.reply("⏹ Stopped")
     except Exception as e:
-        await message.reply(f"鈿狅笍 Could not leave VC: {e}")
+        await message.reply(f"⚠️ Could not leave VC: {e}")
 
 
 # ----------------- RUN BOT -------------------

@@ -143,7 +143,7 @@ def format_time(seconds: int):
     minutes, sec = divmod(seconds, 60)
     return f"{minutes}:{sec:02d}"
 
-@bot.on_message(filters.command("play"))
+@app.on_message(filters.command("play", "."))
 async def play(client, message):
     try:
         await message.delete()
@@ -152,11 +152,11 @@ async def play(client, message):
 
     if len(message.command) < 2:
         return await message.reply(
-            "散瑟岽犪磭 谦岽溼磭蕗蕪 岽涐磸 s岽囜磤蕗岽勈淺nExample: `.play mann mera`"
+            "ɢɪᴠᴇ ǫᴜᴇʀʏ ᴛᴏ sᴇᴀʀᴄʜ\nExample: `.play mann mera`"
         )
 
     query = message.text.split(None, 1)[1]
-    status_msg = await message.reply("`s岽囜磤蕗岽勈溕瓷� 蕪岽忈礈蕗 谦岽溼磭蕗蕪 馃捒`")
+    status_msg = await message.reply("`sᴇᴀʀᴄʜɪɴɢ ʏᴏᴜʀ ǫᴜᴇʀʏ 💿`")
 
     # Fetch API
     try:
@@ -165,17 +165,17 @@ async def play(client, message):
             async with session.get(url) as resp:
                 data = await resp.json()
     except Exception as e:
-        return await status_msg.edit(f"鈿狅笍 Failed to fetch API: {e}")
+        return await status_msg.edit(f"⚠️ Failed to fetch API: {e}")
 
     results = data
     if not results:
-        return await status_msg.edit("鉂� 谦岽溼磭蕗蕪 纱岽忈礇 覔岽忈礈纱岽�")
+        return await status_msg.edit("❌ ǫᴜᴇʀʏ ɴᴏᴛ ғᴏᴜɴᴅ")
 
     song = results[0]
 
     stream_url = song.get("media_url")
     if not stream_url:
-        return await status_msg.edit("鉂� No playable link found!")
+        return await status_msg.edit("❌ No playable link found!")
 
     title = song.get("song") or "Unknown"
     artist = song.get("primary_artists") or song.get("singers") or "Unknown"
@@ -184,7 +184,7 @@ async def play(client, message):
     duration_sec = int(song.get("duration") or 0)
     duration_fmt = format_time(duration_sec)
 
-    progress_bar = f"0:00 鈹�鈹�鈹�鈥⑩攢鈹�鈹�鈹� {duration_fmt}"
+    progress_bar = f"0:00 ───•──── {duration_fmt}"
 
     # Join VC
     try:
@@ -201,7 +201,7 @@ async def play(client, message):
                     AudioPiped(stream_url, HighQualityAudio())
                 )
             except Exception as ee:
-                return await status_msg.edit(f"鈿狅笍 Could not join VC: {ee}")
+                return await status_msg.edit(f"⚠️ Could not join VC: {ee}")
         else:
             try:
                 await call.change_stream(
@@ -209,15 +209,15 @@ async def play(client, message):
                     AudioPiped(stream_url, HighQualityAudio())
                 )
             except Exception as ee:
-                return await status_msg.edit(f"鈿狅笍 Could not play in VC: {ee}")
+                return await status_msg.edit(f"⚠️ Could not play in VC: {ee}")
 
     await status_msg.edit(
-        f"馃帶 **Streaming started!**\n\n"
-        f"馃幍 **Title:** {title}\n"
-        f"馃懁 **Artist:** {artist}\n"
-        f"鈴� **Duration:** {progress_bar}\n\n"
-        f"馃檵 **Requested by:** {message.from_user.first_name}\n"
-        f"馃敆 **API:** @sxyaru"
+        f"🎧 **Streaming started!**\n\n"
+        f"🎵 **Title:** {title}\n"
+        f"👤 **Artist:** {artist}\n"
+        f"⏱ **Duration:** {progress_bar}\n\n"
+        f"🙋 **Requested by:** {message.from_user.first_name}\n"
+        f"🔗 **API:** @sxyaru"
     )
 
 

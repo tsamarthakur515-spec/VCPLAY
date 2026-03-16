@@ -226,8 +226,8 @@ async def play(client, message):
 
 
 # ----------------- REPLY TO AUDIO FILE PLAY -----------------
-@app.on_message(filters.command("rfplay", "."))
-async def rfplay_music(_, message):
+@bot.on_message(filters.command("rfplay"))
+async def play(client, message):
     try:
         await message.delete()
     except:
@@ -265,8 +265,8 @@ async def rfplay_music(_, message):
     else:
         return await message.reply("❌ Please reply to an audio or voice message to play it.")
 
-@app.on_message(filters.command("stop", "."))
-async def stop(client, message):
+@bot.on_message(filters.command("stop"))
+async def play(client, message):
     try:
         await message.delete()
     except:

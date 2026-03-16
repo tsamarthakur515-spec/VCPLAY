@@ -38,7 +38,7 @@ BOT_START_TIME = datetime.now()
 # ----------------- COMMANDS ------------------
 
 # VOICE COMMAND
-@bot.on_message(filters.command("start") & filters.incoming)
+@bot.on_message(filters.command("start") & ~filters.edited)
 async def start(client, message):
     text = (
         "<b>👋 Hello!</b>\n\n"
@@ -60,7 +60,7 @@ async def start(client, message):
     )
 #PINH COMMAND
 
-@bot.on_message(filters.command("ping") & filters.incoming)
+@bot.on_message(filters.command("ping") & ~filters.edited)
 async def ping(client, message):
 
     try:
@@ -143,7 +143,7 @@ def format_time(seconds: int):
     minutes, sec = divmod(seconds, 60)
     return f"{minutes}:{sec:02d}"
 
-@bot.on_message(filters.command("play") & filters.incoming)
+@bot.on_message(filters.command("play") & ~filters.edited)
 async def play(client, message):
     try:
         await message.delete()
@@ -226,8 +226,8 @@ async def play(client, message):
 
 
 # ----------------- REPLY TO AUDIO FILE PLAY -----------------
-@bot.on_message(filters.command("rfplay") & filters.incoming)
-async def play(client, message):
+@bot.on_message(filters.command("rfplay") & ~filters.edited)
+async def rfplay(client, message):
     try:
         await message.delete()
     except:
@@ -265,7 +265,7 @@ async def play(client, message):
     else:
         return await message.reply("❌ Please reply to an audio or voice message to play it.")
 
-@bot.on_message(filters.command("stop") & filters.incoming)
+@bot.on_message(filters.command("stop") & ~filters.edited)
 async def play(client, message):
     try:
         await message.delete()

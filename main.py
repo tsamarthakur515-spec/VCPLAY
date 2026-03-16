@@ -130,11 +130,11 @@ def format_time(seconds: int):
     return f"{minutes}:{sec:02d}"
 
 def create_progress_bar(current, total, length=12):
-    """Return a progress bar like: 鈻戔枒鈻戰煍樷枒鈻戔枒"""
+    """Return a progress bar like: ░░░🔘░░░"""
     if total == 0:
         total = 1
     pos = int(length * current / total)
-    bar = "鈹�" * pos + "鈥�" + "鈹�" * (length - pos)
+    bar = "─" * pos + "•" + "─" * (length - pos)
     return bar
 
 #DURATION STOP

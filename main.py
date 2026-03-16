@@ -226,7 +226,7 @@ async def play(client, message):
 
 
 # ----------------- REPLY TO AUDIO FILE PLAY -----------------
-@bot.on_message(filters.command("rfplay"))
+@app.on_message(filters.command("rfplay", "."))
 async def rfplay_music(_, message):
     try:
         await message.delete()
@@ -238,7 +238,7 @@ async def rfplay_music(_, message):
     if message.reply_to_message:
         audio = message.reply_to_message.audio or message.reply_to_message.voice
         if not audio:
-            return await message.reply("鉂� Reply to an audio file")
+            return await message.reply("❌ Reply to an audio file")
 
         # Download the file
         file = await message.reply_to_message.download()
@@ -256,14 +256,14 @@ async def rfplay_music(_, message):
             duration = f"{mins}:{secs:02d}"
 
         await message.reply(
-            f"馃幍 Playing replied audio\n"
-            f"鈴� Duration: {duration or 'Unknown'}\n"
-            f"馃幍 Requested by: {message.from_user.first_name}\n"
-            f"馃敆 Music based on: [Local File]"
+            f"🎵 Playing replied audio\n"
+            f"⏱ Duration: {duration or 'Unknown'}\n"
+            f"🎵 Requested by: {message.from_user.first_name}\n"
+            f"🔗 Music based on: [Local File]"
         )
         return
     else:
-        return await message.reply("鉂� Please reply to an audio or voice message to play it.")
+        return await message.reply("❌ Please reply to an audio or voice message to play it.")
 
 @bot.on_message(filters.command("stop"))
 async def stop(client, message):

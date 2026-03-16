@@ -5,32 +5,35 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Install system dependencies + Node.js
-RUN apt-get update && \
-    apt-get install -y \
-        curl \
-        git \
-        build-essential \
-        ffmpeg \
-        aria2 \
-        ca-certificates \
-        wget \
-        gnupg && \
-    # Install Node.js 18
-    curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
-    apt-get install -y nodejs && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# System dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    build-essential \
+    ffmpeg \
+    aria2 \
+    ca-certificates \
+    wget \
+    gnupg \
+    libffi-dev \
+    libssl-dev \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js 18
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
 
 # Copy project
-COPY . /app
+COPY . .
 
-# Install Python dependencies
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+# Upgrade pip
+RUN pip install --upgrade pip
+
+# Install python packages
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Create downloads folder
 RUN mkdir -p /app/downloads
 
-# Run bot
 CMD ["python", "main.py"]

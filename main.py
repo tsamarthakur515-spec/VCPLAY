@@ -15,7 +15,7 @@ from pytgcalls.types.input_stream.quality import HighQualityAudio
 # ------------------- CONFIG -------------------
 API_ID = 33603336
 API_HASH = "c9683a8ec3b886c18219f650fc8ed429"
-BOT_TOKEN = "YOUR_BOT_TOKEN"
+BOT_TOKEN = "8411080834:AAGG87Dh82Lc5UFyhJJJYgj3UU-OIUw4iJY"
 SESSION = "BQE-4i0ASxu8TXk4s870tFMn-D2Ijs-7DaTep8qcmRnZuowGYTiKDzzy9fKRT3pCc7aFI9oql0Rp5k1FkymDhRbewYPN11p5G7exMCs-z2bdMPuRoJCF60r7p_xq0TBjtLw5P1f-pXHHRxeXSAq0nKyNglv2pZ-GVCbYL4J-OwIkfck4wZyfiU0H58LZla5Il4VmVww-ewK3roa4mVjIxGKYoFva7LqYEf9Iti77jLz7HW7gCfuNessLDXqH1se4DuOSmoJzbacJxofENDQJChGjP4K7gbkMQQKwjCQfndvTmHLyDnc5jDqwfngZK1ogepmyiXZhhzHVebIieznK4DXTM1Q7pAAAAAHKarFXAA"
 # ----------------------------------------------
 

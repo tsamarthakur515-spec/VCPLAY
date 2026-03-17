@@ -56,7 +56,7 @@ async def start_cmd(_, msg: Message):
     await msg.reply_text(txt, disable_web_page_preview=True)
 
 
-@bot.on_message(filters.command("ping") & ~filters.edited)
+@bot.on_message(filters.command("ping"))
 async def ping_cmd(_, msg: Message):
     start = time.time()
     sent = await msg.reply_text("Pinging...")

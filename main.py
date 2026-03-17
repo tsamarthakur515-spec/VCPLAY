@@ -38,7 +38,7 @@ def fmt_time(seconds: int) -> str:
 
 # ───────────── COMMANDS ─────────────
 
-@bot.on_message(filters.command("start") & filters.private & ~filters.via_bot)
+@bot.on_message(filters.command("start"))
 async def start_cmd(_, msg: Message):
     txt = (
         "<b>👋 Hello there!</b>\n\n"
@@ -56,7 +56,7 @@ async def start_cmd(_, msg: Message):
     await msg.reply_text(txt, disable_web_page_preview=True)
 
 
-@bot.on_message(filters.command("ping") & ~filters.via_bot)
+@bot.on_message(filters.command("ping"))
 async def ping_cmd(_, msg: Message):
     start = time.time()
     sent = await msg.reply_text("Pinging...")
@@ -79,7 +79,7 @@ async def ping_cmd(_, msg: Message):
     await sent.edit_text(text)
 
 
-@bot.on_message(filters.command("play") & filters.group & ~filters.via_bot)
+@bot.on_message(filters.command("play"))
 # etc.
 async def play_cmd(_, msg: Message):
     if len(msg.command) < 2:
@@ -169,7 +169,7 @@ async def play_next(chat_id: int, msg: Message | None = None):
         await bot.send_message(chat_id, text)
 
 
-@bot.on_message(filters.command("skip") & filters.group & ~filters.via_bot)
+@bot.on_message(filters.command("skip"))
 async def skip_cmd(_, msg: Message):
     chat_id = msg.chat.id
     if chat_id not in queues or not queues[chat_id]:
@@ -189,7 +189,7 @@ async def skip_cmd(_, msg: Message):
             pass
 
 
-@bot.on_message(filters.command("queue") & filters.group & ~filters.via_bot)
+@bot.on_message(filters.command("queue"))
 async def queue_cmd(_, msg: Message):
     chat_id = msg.chat.id
     if chat_id not in queues or not queues[chat_id]:
@@ -201,7 +201,7 @@ async def queue_cmd(_, msg: Message):
     await msg.reply(txt)
 
 
-@bot.on_message(filters.command("stop") & filters.group & ~filters.via_bot)
+@bot.on_message(filters.command("stop"))
 async def stop_cmd(_, msg: Message):
     try:
         await call.leave_group_call(msg.chat.id)
@@ -213,7 +213,7 @@ async def stop_cmd(_, msg: Message):
 
 
 # Your rfplay (reply audio) — kept almost same, just cleaned
-@bot.on_message(filters.command("rfplay") & filters.group & ~filters.via_bot)
+@bot.on_message(filters.command("rfplay"))
 async def rfplay_cmd(_, msg: Message):
     if not msg.reply_to_message or not (msg.reply_to_message.audio or msg.reply_to_message.voice):
         return await msg.reply("Reply to an audio/voice message.")

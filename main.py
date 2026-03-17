@@ -27,7 +27,7 @@ call = PyTgCalls(assistant)
 
 BOT_START_TIME = datetime.now()
 # Simple queue: {chat_id: [{"title": "...", "url": "...", "duration": int}, ...]}
- queues = {}  # type: dict[int, list[dict]]
+queues = {}  # type: dict[int, list[dict]]
 
 # ───────────── HELPERS ─────────────
 def fmt_time(seconds: int) -> str:

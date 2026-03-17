@@ -38,7 +38,7 @@ def fmt_time(seconds: int) -> str:
 
 # ───────────── COMMANDS ─────────────
 
-@bot.on_message(filters.command("start") & filters.private & ~filters.edited)
+@bot.on_message(filters.command("start") & filters.private)
 async def start_cmd(_, msg: Message):
     txt = (
         "<b>👋 Hello there!</b>\n\n"

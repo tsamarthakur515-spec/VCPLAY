@@ -209,7 +209,7 @@ async def stop_cmd(_, msg: Message):
 
 
 # Your rfplay (reply audio) — kept almost same, just cleaned
-@@bot.on_message(filters.command("rfplay") & filters.group)
+@bot.on_message(filters.command("rfplay") & filters.group)
 async def rfplay_cmd(_, msg: Message):
     if not msg.reply_to_message or not (msg.reply_to_message.audio or msg.reply_to_message.voice):
         return await msg.reply("Reply to an audio/voice message.")

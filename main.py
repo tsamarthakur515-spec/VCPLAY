@@ -86,17 +86,33 @@ async def play_next(chat_id: int, msg: Message = None):
     
     song = queues[chat_id][0]
     try:
-        # Pytgcalls logic
-        await call.join_group_call(
-            chat_id,
-            AudioPiped(song["url"], HighQualityAudio()),
-            stream_type=StreamType().pulse_stream
-        )
-        text = f"🎵 **Now Playing:** {song['title']}\n👤 **By:** {song['by']}"
-        if msg: await msg.edit(text)
-        else: await bot.send_message(chat_id, text)
+        # Pehle join karne ki koshish karein
+        try:
+            await call.join_group_call(
+                chat_id,
+                AudioPiped(song["url"], HighQualityAudio()),
+                stream_type=StreamType().pulse_stream
+            )
+        except Exception:
+            # Agar pehle se join hai, toh sirf stream change karein
+            await call.change_stream(
+                chat_id,
+                AudioPiped(song["url"], HighQualityAudio())
+            )
+            
+        text = f"🎵 **Now Playing:** {song['title']}\n👤 **Requested by:** {song['by']}"
+        if msg: 
+            await msg.edit(text)
+        else: 
+            await bot.send_message(chat_id, text)
+            
     except Exception as e:
-        if msg: await msg.edit(f"Join Error: {e}")
+        print(f"Error details: {e}") # Terminal mein check karein
+        if msg: 
+            await msg.edit(f"❌ **Assistant join nahi kar pa raha!**\nError: `{e}`")
+        else:
+            await bot.send_message(chat_id, f"Error: {e}")
+
 
 @bot.on_message(filters.command("stop"))
 async def stop_cmd(_, msg: Message):

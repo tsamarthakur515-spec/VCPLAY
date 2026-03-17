@@ -75,7 +75,8 @@ async def ping_cmd(_, msg: Message):
     await sent.edit_text(text)
 
 
-@bot.on_message(filters.command("play") & filters.group & ~filters.edited)
+@bot.on_message(filters.command("play") & filters.group)
+# etc.
 async def play_cmd(_, msg: Message):
     if len(msg.command) < 2:
         return await msg.reply("Give a song name.\nEx: <code>/play mann mera</code>")

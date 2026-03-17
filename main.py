@@ -197,7 +197,7 @@ async def queue_cmd(_, msg: Message):
     await msg.reply(txt)
 
 
-@bot.on_message(filters.command("stop") & filters.group & ~filters.edited)
+@bot.on_message(filters.command("stop") & filters.group)
 async def stop_cmd(_, msg: Message):
     try:
         await call.leave_group_call(msg.chat.id)

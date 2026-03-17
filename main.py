@@ -66,15 +66,16 @@ async def ping_cmd(_, msg: Message):
     cpu = psutil.cpu_percent()
 
     try:
-    vc = "Active" if await call.get_call(msg.chat.id) else "Not active"
-except:
-    vc = "Unknown"
+        vc = "Active" if await call.get_call(msg.chat.id) else "Not active"
+    except:
+        vc = "Unknown"
 
     text = f"""<b>🏓 Pong!</b>
 • Latency: <code>{round((end - start) * 1000, 2)} ms</code>
 • Uptime : <code>{uptime}</code>
 • CPU    : <code>{cpu}%</code>
 • VC     : {vc}"""
+
     await sent.edit_text(text)
 
 

@@ -165,7 +165,7 @@ async def play_next(chat_id: int, msg: Message | None = None):
         await bot.send_message(chat_id, text)
 
 
-@bot.on_message(filters.command("skip") & filters.group & ~filters.edited)
+@bot.on_message(filters.command("skip") & filters.group)
 async def skip_cmd(_, msg: Message):
     chat_id = msg.chat.id
     if chat_id not in queues or not queues[chat_id]:

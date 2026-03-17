@@ -185,7 +185,7 @@ async def skip_cmd(_, msg: Message):
             pass
 
 
-@bot.on_message(filters.command("queue") & filters.group & ~filters.edited)
+@bot.on_message(filters.command("queue") & filters.group)
 async def queue_cmd(_, msg: Message):
     chat_id = msg.chat.id
     if chat_id not in queues or not queues[chat_id]:

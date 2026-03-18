@@ -80,7 +80,7 @@ async def ping_cmd(_, msg: Message):
 @bot.on_message(filters.command("start"))
 async def start_cmd(_, msg: Message):
     try:
-        await msg.delete() # 'message' ko 'msg' kiya yahan fix ke liye
+        await msg.delete() 
     except:
         pass
         
@@ -95,6 +95,7 @@ async def start_cmd(_, msg: Message):
         "✨ <b>ᴍᴀᴅᴇ ᴡɪᴛʜ ❤️ ʙʏ:</b> <a href='https://t.me/sxyaru'>sxyaru</a>"
     )
 
+    # Buttons ko compact karne ke liye ek hi row mein zyada buttons daale hain
     buttons = InlineKeyboardMarkup([
         [
             InlineKeyboardButton("❓ ʜᴇʟᴘ", callback_data="help_menu"),
@@ -115,7 +116,6 @@ async def start_cmd(_, msg: Message):
         caption=text,
         reply_markup=buttons
     )
-
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 @bot.on_message(filters.command("play"))

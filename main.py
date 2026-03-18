@@ -484,27 +484,22 @@ async def cb_handler(_, query):
     # --- Start & Help Menus ---
     if data == "help_menu":
         help_text = (
-            "<b>📖 <u>ʙᴏᴛ ʜᴇʟᴘ ᴍᴇɴᴜ</u></b>\n\n"
-            "🚀 <b>/play</b> [ꜱᴏɴɢ]  |  🛑 <b>/stop</b>\n"
-            "⏭ <b>/skip</b>  |  ⏸ <b>/pause</b>\n"
-            "▶️ <b>/resume</b>  |  📋 <b>/queue</b>\n"
-            "📡 <b>/ping</b> - Stats check"
+            "<b> ʙᴏᴛ ʜᴇʟᴘ ᴍᴇɴᴜ</b>\n\n"
+            "<b>/play</b> [ꜱᴏɴɢ]  
+            "<b>/ping</b> - Stats check"
         )
         await query.message.edit_caption(
             caption=help_text,
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ ʙᴀᴄᴋ", callback_data="back_to_start")]])
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("ʙᴀᴄᴋ", callback_data="back_to_start")]])
         )
 
     elif data == "repo_menu":
         repo_text = (
-            "<b>📂 <u>ʀᴇᴘᴏsɪᴛᴏʀʏ ɪɴғᴏ</u></b>\n\n"
-            "✨ <b>Owner:</b> <a href='https://t.me/sxyaru'>sxyaru</a>\n"
-            "🛠 <b>Language:</b> Python\n\n"
-            "Custom music player build by sxyaru."
+            "<b> ʀᴇᴘᴏ ᴋʏᴀ ʟᴇɢᴀ ᴍᴀᴅᴀʀᴄʜᴏᴅ\nᴘᴀɴᴅᴀ ᴋᴀ ʟᴀɴᴅ ʟᴇʟᴇ ʙᴏʟ ʟᴇɢᴀ 😂🖕??</b>"
         )
         await query.message.edit_caption(
             caption=repo_text,
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ ʙᴀᴄᴋ", callback_data="back_to_start")]])
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("ʙᴀᴄᴋ", callback_data="back_to_start")]])
         )
 
     elif data == "back_to_start":

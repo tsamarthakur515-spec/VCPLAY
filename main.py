@@ -84,25 +84,26 @@ def gen_btn_progressbar(total_sec, current_sec):
 
 # TIMER LOOPER (Ye background mein chalega)
 # Humein queues aur call variables yahan chahiye honge
+# TIMER LOOPER (Corrected with Actual Time)
 async def update_timer(chat_id, message_id, duration):
-    current_time = 0
-    while current_time < duration:
-        await asyncio.sleep(10) # 10 sec ka gap perfect hai
+    # Gaana start hone ka real time capture karo
+    start_time = time.time() 
+    
+    while True:
+        await asyncio.sleep(10) # 10-15 sec ka gap thik hai
         
         # Check karo agar music stop ho gaya ya queue khali ho gayi
-        if chat_id not in queues:
+        if chat_id not in queues or not queues[chat_id]:
             break
             
-        # Agar music paused hai, toh timer mat badhao
-        # (Iske liye aapko ek 'is_paused' variable ya check chahiye hoga)
-        # Abhi ke liye hum simple increment kar rahe hain:
-        current_time += 10
+        # Actual kitna time bita hai (Real-time calculation)
+        elapsed_time = int(time.time() - start_time)
 
-        # Sabse bada FIX: Agar current_time duration se upar nikal jaye
-        if current_time >= duration:
-            current_time = duration # Full bar dikhao aur loop khatam karo
+        # Agar elapsed time duration se zyada ho jaye toh stop karo
+        if elapsed_time >= duration:
+            elapsed_time = duration # Full bar dikhao
 
-        new_prog = gen_btn_progressbar(duration, current_time)
+        new_prog = gen_btn_progressbar(duration, elapsed_time)
         
         try:
             await bot.edit_message_reply_markup(
@@ -127,11 +128,13 @@ async def update_timer(chat_id, message_id, duration):
                     ]
                 ])
             )
-            # Agar gaana khatam ho gaya toh loop exit kar do
-            if current_time >= duration:
+            # Agar real time duration ke barabar ho gaya toh exit loop
+            if elapsed_time >= duration:
                 break
         except Exception:
+            # Agar message delete ho jaye ya koi error aaye toh loop band karo
             break
+
 
 
 

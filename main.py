@@ -185,7 +185,7 @@ async def welcome_user(client, msg: Message):
 
 
 
-@_message(filters.command("ping"))
+@bot.on_message(filters.command("ping"))
 async def ping_cmd(_, msg: Message):
     # User ka /ping command delete karne ki koshish
     try:

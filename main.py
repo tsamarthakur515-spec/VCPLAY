@@ -319,25 +319,28 @@ async def play_cmd(_, msg: Message):
 
     buttons = InlineKeyboardMarkup([
         [
-            # Progress Bar Button (Image style)
-            InlineKeyboardButton(text=f"{btn_prog} +", callback_data="prog_update")
-        ],
-        [
-            InlineKeyboardButton("▷", callback_data="resume_cb"),
-            InlineKeyboardButton("Ⅱ", callback_data="pause_cb"),
-            InlineKeyboardButton("⏭", callback_data="skip_cb"),
-            InlineKeyboardButton("▢", callback_data="stop_cb")
-        ],
-        [
-            InlineKeyboardButton("⏮ -20s", callback_data="seek_back"),
-            InlineKeyboardButton("↺", callback_data="replay_cb"),
-            InlineKeyboardButton("+20s ⏭", callback_data="seek_forward")
-        ],
-        [
-            InlineKeyboardButton("HELP ↗", callback_data="help_menu"),
-            InlineKeyboardButton("SUPPORT ↗", url="https://t.me/your_channel")
-        ]
-    ])
+        # Progress Bar Button (Row 1)
+        InlineKeyboardButton(text=f"{btn_prog}", callback_data="prog_update")
+    ],
+    [
+        # Row 2: 4 Buttons (Isse buttons automatically chote ho jayenge)
+        InlineKeyboardButton("▷", callback_data="resume_cb"),
+        InlineKeyboardButton("Ⅱ", callback_data="pause_cb"),
+        InlineKeyboardButton("⏭", callback_data="skip_cb"),
+        InlineKeyboardButton("▢", callback_data="stop_cb")
+    ],
+    [
+        # Row 3: 3 Buttons
+        InlineKeyboardButton("⏮ -20s", callback_data="seek_back"),
+        InlineKeyboardButton("↺", callback_data="replay_cb"),
+        InlineKeyboardButton("+20s ⏭", callback_data="seek_forward")
+    ],
+    [
+        # Row 4: 2 Buttons
+        InlineKeyboardButton("HELP ↗", callback_data="help_menu"),
+        InlineKeyboardButton("SUPPORT ↗", url="https://t.me/your_channel")
+    ]
+])
 
     await m.delete()
     await bot.send_photo(chat_id, photo=thumb, caption=text, reply_markup=buttons)

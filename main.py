@@ -244,10 +244,6 @@ async def start_cmd(_, msg: Message):
 
 @bot.on_message(filters.command("play"))
 async def play_cmd(_, msg: Message):
-    try:
-        await message.delete()
-    except:
-        pass
     chat_id = msg.chat.id
     user_name = msg.from_user.first_name if msg.from_user else "User"
 
@@ -309,7 +305,7 @@ async def play_cmd(_, msg: Message):
         await m.delete()
         return
 
-    # 5. UI Layout (Success hone par hi dikhega)
+    # 5. UI Layout (Buttons set to Small/Compact)
     btn_prog = gen_btn_progressbar(duration, 0) 
     
     text = (
@@ -320,19 +316,25 @@ async def play_cmd(_, msg: Message):
     )
 
     buttons = InlineKeyboardMarkup([
-        [InlineKeyboardButton(text=f"{btn_prog}", callback_data="prog_update")],
         [
+            # Row 1: Progress Bar Button
+            InlineKeyboardButton(text=f"{btn_prog}", callback_data="prog_update")
+        ],
+        [
+            # Row 2: 4 Buttons (Small Look)
             InlineKeyboardButton("▷", callback_data="resume_cb"),
             InlineKeyboardButton("Ⅱ", callback_data="pause_cb"),
             InlineKeyboardButton("⏭", callback_data="skip_cb"),
             InlineKeyboardButton("▢", callback_data="stop_cb")
         ],
         [
+            # Row 3: 3 Buttons
             InlineKeyboardButton("⏮ -20s", callback_data="seek_back"),
             InlineKeyboardButton("↺", callback_data="replay_cb"),
             InlineKeyboardButton("+20s ⏭", callback_data="seek_forward")
         ],
         [
+            # Row 4: 2 Buttons
             InlineKeyboardButton("HELP ↗", callback_data="help_menu"),
             InlineKeyboardButton("SUPPORT ↗", url="https://t.me/your_channel")
         ]
@@ -340,12 +342,13 @@ async def play_cmd(_, msg: Message):
 
     await m.delete()
     
-    # 6. SEND PHOTO AND START TIMER TASK
-    # Sent message ko capture kar rahe hain taaki ID timer ko de sakein
+    # 6. SEND PHOTO AND START TIMER
+    # pmp capture karta hai message ki details timer update karne ke liye
     pmp = await bot.send_photo(chat_id, photo=thumb, caption=text, reply_markup=buttons)
     
-    # Ye line timer ko background mein start kar degi
+    # Timer start (har 10 second mein button update karega)
     asyncio.create_task(update_timer(chat_id, pmp.id, duration))
+
 
 
 

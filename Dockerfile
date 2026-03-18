@@ -5,7 +5,7 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# System dependencies
+# System dependencies (Added Audio Drivers & Pulseaudio)
 RUN apt-get update && apt-get install -y \
     curl \
     git \
@@ -18,6 +18,11 @@ RUN apt-get update && apt-get install -y \
     libffi-dev \
     libssl-dev \
     python3-dev \
+    pulseaudio \
+    libasound2 \
+    alsa-utils \
+    libpulse-dev \
+    xvfb \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Node.js 18
@@ -36,4 +41,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Create downloads folder
 RUN mkdir -p /app/downloads
 
-CMD ["python", "main.py"]
+# --- IMPORTANT: PulseAudio Setup ---
+# Ye line PulseAudio ko background mein chalne ke liye config karti hai
+RUN mkdir -p /var/run/pulse /home/pulse && \
+    chmod -R 777 /var/run/pulse /home/pulse
+
+# Bot start karne se pehle PulseAudio start karenge
+CMD pulseaudio -D --exit-idle-time=-1 && python main.py

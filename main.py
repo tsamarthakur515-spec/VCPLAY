@@ -516,10 +516,14 @@ async def play_next(chat_id: int):
     try:
         # 2. Assistant ko join ya stream change karwana
         try:
+            # Latest version mein 'stream_type' hat gaya hai, 
+            # PyTgCalls ab khud handle karta hai.
             await call.join_group_call(
                 chat_id,
-                AudioPiped(url, HighQualityAudio()),
-                stream_type=StreamType().pulse_stream
+                AudioPiped(
+                    url, 
+                    HighQualityAudio() 
+                )
             )
         except Exception:
             # Agar pehle se VC mein hai toh sirf stream badlo
@@ -528,32 +532,27 @@ async def play_next(chat_id: int):
                 AudioPiped(url, HighQualityAudio())
             )
         
-        # Agar yahan tak code pahuncha matlab SUCCESS!
         return True
             
     except Exception as e:
         print(f"Assistant Join Error: {e}")
         
-        # Error aane par queue se gaana hata do
         if chat_id in queues:
             queues[chat_id].pop(0)
             
-        # Error message format
         error_text = f"❌ **Assistant join nahi kar pa raha!**\n\n"
         
-        # Special check for VC not started
-        if "CHAT_ADMIN_REQUIRED" in str(e):
-            error_text += "💡 **Reason:** Assistant ke paas 'Manage Video Chats' permission nahi hai."
-        elif "not in a group call" in str(e).lower() or "GROUP_CALL_NOT_MODIFIED" in str(e):
-            error_text += "💡 **Reason:** Group mein Voice Chat (VC) start nahi hai. Pehle VC start karo!"
+        # Latest Error Strings check
+        err_msg = str(e).lower()
+        if "chat_admin_required" in err_msg:
+            error_text += "💡 **Reason:** Assistant ko 'Manage Video Chats' permission do!"
+        elif "not in a group call" in err_msg or "group_call_not_modified" in err_msg:
+            error_text += "💡 **Reason:** Group mein Voice Chat (VC) start nahi hai!"
         else:
             error_text += f"💬 **Error:** <code>{e}</code>"
             
         await bot.send_message(chat_id, error_text)
-        
-        # Matlab FAILED!
         return False
-
 
 
 

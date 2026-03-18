@@ -195,8 +195,8 @@ async def welcome_user(client, msg: Message):
 
 
 @bot.on_message(filters.command("ping"))
-async def ping_cmd(_, msg: Message):
-    # User ka /ping command delete karne ki koshish
+async def ping_cmd(client, msg: Message):
+    # 1. User ka command delete karo
     try:
         await msg.delete()
     except:
@@ -204,23 +204,19 @@ async def ping_cmd(_, msg: Message):
 
     start_time = time.time()
     
-    # Temporarily 'Pinging...' message (Optional, direct photo bhi bhej sakte ho)
-    m = await msg.reply_text("<code>ᴘɪɴɢɪɴɢ..</code>")
+    # 2. 'Pinging...' message bhejo (client.send_message use karein)
+    m = await client.send_message(msg.chat.id, "<code>ᴘɪɴɢɪɴɢ..</code>")
     
-    # Latency Calculation
+    # Latency & Stats logic
     end_time = time.time()
     latency = round((end_time - start_time) * 1000, 2)
-    
-    # Uptime Logic
     uptime_sec = (datetime.now() - BOT_START_TIME).total_seconds()
     uptime = str(timedelta(seconds=int(uptime_sec)))
     
-    # System Stats
     cpu = psutil.cpu_percent()
     ram = psutil.virtual_memory().percent
     disk = psutil.disk_usage('/').percent
 
-    # Final Text
     text = (
         "<b>🏓 ᴘᴏɴɢ! sᴛᴀᴛs ᴀʀᴇ ʜᴇʀᴇ</b>\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
@@ -229,12 +225,10 @@ async def ping_cmd(_, msg: Message):
         f"💻 <b>ᴄᴘᴜ:</b> <code>{cpu}%</code>\n"
         f"📊 <b>ʀᴀᴍ:</b> <code>{ram}%</code>\n"
         f"💾 <b>ᴅɪsᴋ:</b> <code>{disk}%</code>\n"
-        f"📡 <b>ᴘʏᴛɢᴄᴀʟʟs:</b> <code>2.2.11</code>\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
         "👤 <b>ᴏᴡɴᴇʀ:</b> <a href='https://t.me/sxyaru'>ᴀʀᴜ × ᴀᴘɪ [ʙᴏᴛs]</a>"
     )
 
-    # Buttons
     buttons = InlineKeyboardMarkup([
         [
             InlineKeyboardButton("sᴜᴘᴘᴏʀᴛ", url="https://t.me/sxyaru"),
@@ -242,20 +236,17 @@ async def ping_cmd(_, msg: Message):
         ]
     ])
 
-    # 1. Pinging message delete karo
+    # 3. Pinging delete karke photo bhejo
     await m.delete()
-
-    # 2. Final Photo + Caption + Buttons bhejo
-    # Yahan apni pasand ki image link daal dena
+    
     PING_IMG = "https://files.catbox.moe/nacfzm.jpg" 
     
-    await bot.send_photo(
+    await client.send_photo(
         msg.chat.id,
         photo=PING_IMG,
         caption=text,
         reply_markup=buttons
     )
-
 
 # ───────────── START COMMAND ─────────────
 

@@ -197,6 +197,32 @@ async def play_next(chat_id: int, msg: Message = None):
             await bot.send_message(chat_id, f"Error: {e}")
 
 
+@bot.on_callback_query()
+async def cb_handler(_, query):
+    chat_id = query.message.chat.id
+    data = query.data
+
+    if data == "pause_cb":
+        try:
+            await call.pause_stream(chat_id)
+            await query.answer("Paused ⏸")
+        except:
+            await query.answer("Nothing playing!", show_alert=True)
+
+    elif data == "resume_cb":
+        try:
+            await call.resume_stream(chat_id)
+            await query.answer("Resumed ▶️")
+        except:
+            await query.answer("Nothing playing!", show_alert=True)
+
+    elif data == "skip_cb":
+        # Yahan apna skip logic call karein
+        await query.answer("Skipping... ⏭")
+        # Direct skip function ya code yahan add karein
+
+
+
 @bot.on_message(filters.command("stop"))
 async def stop_cmd(_, msg: Message):
     try:

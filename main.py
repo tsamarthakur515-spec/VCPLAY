@@ -185,21 +185,24 @@ async def welcome_user(client, msg: Message):
 
 
 
-@bot.on_message(filters.command("ping"))
+@_message(filters.command("ping"))
 async def ping_cmd(_, msg: Message):
+    # User ka /ping command delete karne ki koshish
     try:
         await msg.delete()
     except:
         pass
-    # 1. Sabse pehle loading message
+
     start_time = time.time()
-    m = await msg.reply_text("📡 <code>Pinging...</code>")
     
-    # Calculation start
+    # Temporarily 'Pinging...' message (Optional, direct photo bhi bhej sakte ho)
+    m = await msg.reply_text("<code>ᴘɪɴɢɪɴɢ..</code>")
+    
+    # Latency Calculation
     end_time = time.time()
     latency = round((end_time - start_time) * 1000, 2)
     
-    # Uptime logic
+    # Uptime Logic
     uptime_sec = (datetime.now() - BOT_START_TIME).total_seconds()
     uptime = str(timedelta(seconds=int(uptime_sec)))
     
@@ -208,23 +211,41 @@ async def ping_cmd(_, msg: Message):
     ram = psutil.virtual_memory().percent
     disk = psutil.disk_usage('/').percent
 
-    # 2. Thoda 'delay' feel dene ke liye (Optional, professional lagta hai)
-    await asyncio.sleep(0.5)
-
-    # 3. Final message edit
+    # Final Text
     text = (
-        "<b>🏓 ᴘᴏɴɢ!</b>\n"
+        "<b>🏓 ᴘᴏɴɢ! sᴛᴀᴛs ᴀʀᴇ ʜᴇʀᴇ</b>\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
         f"🚀 <b>ʟᴀᴛᴇɴᴄʏ:</b> <code>{latency} ms</code>\n"
         f"🆙 <b>ᴜᴘᴛɪᴍᴇ:</b> <code>{uptime}</code>\n"
         f"💻 <b>ᴄᴘᴜ:</b> <code>{cpu}%</code>\n"
         f"📊 <b>ʀᴀᴍ:</b> <code>{ram}%</code>\n"
         f"💾 <b>ᴅɪsᴋ:</b> <code>{disk}%</code>\n"
+        f"📡 <b>ᴘʏᴛɢᴄᴀʟʟs:</b> <code>v{pytg_version}</code>\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
-        "👤 <b>ʙʏ:</b> <a href='https://t.me/sxyaru'>ᴀʀᴜ × ᴀᴘɪ [ʙᴏᴛs]</a>"
+        "👤 <b>ᴏᴡɴᴇʀ:</b> <a href='https://t.me/sxyaru'>ᴀʀᴜ × ᴀᴘɪ [ʙᴏᴛs]</a>"
     )
 
-    await m.edit_text(text, disable_web_page_preview=True)
+    # Buttons
+    buttons = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("sᴜᴘᴘᴏʀᴛ", url="https://t.me/sxyaru"),
+            InlineKeyboardButton("ᴅᴇᴠᴇʟᴏᴘᴇʀ", url="https://t.me/ll_PANDA_BBY_ll")
+        ]
+    ])
+
+    # 1. Pinging message delete karo
+    await m.delete()
+
+    # 2. Final Photo + Caption + Buttons bhejo
+    # Yahan apni pasand ki image link daal dena
+    PING_IMG = "https://files.catbox.moe/nacfzm.jpg" 
+    
+    await bot.send_photo(
+        msg.chat.id,
+        photo=PING_IMG,
+        caption=text,
+        reply_markup=buttons
+    )
 
 
 # ───────────── START COMMAND ─────────────

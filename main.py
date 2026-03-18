@@ -194,21 +194,37 @@ async def cb_handler(_, query):
     if data == "pause_cb":
         try:
             await call.pause_stream(chat_id)
-            await query.answer("Paused ⏸")
+            await query.answer("Paused ⏸", show_alert=False)
         except:
-            await query.answer("Nothing playing!", show_alert=True)
+            await query.answer("Nothing is playing!", show_alert=True)
 
     elif data == "resume_cb":
         try:
             await call.resume_stream(chat_id)
-            await query.answer("Resumed ▶️")
+            await query.answer("Resumed ▶️", show_alert=False)
         except:
-            await query.answer("Nothing playing!", show_alert=True)
+            await query.answer("Nothing is playing!", show_alert=True)
 
     elif data == "skip_cb":
-        # Yahan apna skip logic call karein
-        await query.answer("Skipping... ⏭")
-        # Direct skip function ya code yahan add karein
+        if chat_id not in queues or len(queues[chat_id]) <= 1:
+            try:
+                await call.leave_group_call(chat_id)
+                queues.pop(chat_id, None)
+                await query.message.delete()
+                await bot.send_message(chat_id, "⏭ **Skipped! Queue empty, leaving VC.**")
+            except:
+                await query.answer("Nothing to skip!", show_alert=True)
+        else:
+            queues[chat_id].pop(0)
+            await query.answer("Skipping to next... ⏭")
+            await play_next(chat_id)
+            # Naye gaane ki info update karna (Optional)
+            song = queues[chat_id][0]
+            await query.message.edit_caption(
+                f"🎵 **Now Playing Next**\n\n📝 **Song:** <code>{song['title']}</code>\n🎧 **By:** {song['by']}",
+                reply_markup=query.message.reply_markup
+            )
+
 
 
 

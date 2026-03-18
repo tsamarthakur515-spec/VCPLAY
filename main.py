@@ -20,7 +20,7 @@ from pytgcalls.types import AudioPiped, HighQualityAudio
 
 
 from yt_search_prow import YoutubeSearch
-from pytgcalls.types import AudioVideoPiped, HighQualityAudio, HighQualityVideo
+from pytgcalls.types import AudioVideoPiped, HighQualityAudio, LowQualityVideo
 # ───────────── CONFIG ─────────────
 API_ID = 33603336
 API_HASH = "c9683a8ec3b886c18219f650fc8ed429"
@@ -146,70 +146,45 @@ async def update_timer(chat_id, message_id, duration):
 
 @bot.on_message(filters.command("vplay"))
 async def vplay_cmd(_, msg: Message):
-    try:
-        await msg.delete()
-    except:
-        pass
-        
     chat_id = msg.chat.id
-    user_name = msg.from_user.first_name if msg.from_user else "User"
-
     if len(msg.command) < 2:
-        return await msg.reply("❌ **Song/Video ka naam do!**\nExample: `/vplay t-series`")
+        return await msg.reply("❌ **Video ka naam do!**")
 
     query = msg.text.split(None, 1)[1].strip()
-    m = await msg.reply("🔎 <b>Searching Video on YouTube...</b>")
+    m = await msg.reply("🔎 <b>Searching...</b>")
+
+    # Micronode safe options
+    ydl_opts = {"format": "best[height<=360]/best", "quiet": True, "default_search": "ytsearch1"}
 
     try:
-        # YouTube Search Logic
-        results = YoutubeSearch(query, max_results=1).to_dict()
-        if not results:
-            return await m.edit("❌ Video nahi mili.")
-        
-        video_url = f"https://www.youtube.com/watch?v={results[0]['id']}"
-        title = results[0]['title']
-        thumb = results[0]['thumbnails'][0]
-        duration = results[0]['duration'] # Format '5:30'
-
-        # Duration ko seconds mein badlo (Timer ke liye)
-        time_parts = list(map(int, duration.split(':')))
-        dur_seconds = time_parts[0] * 60 + time_parts[1] if len(time_parts) == 2 else time_parts[0]
-
-        # yt-dlp se Direct Stream Link nikalna
-        ydl_opts = {"format": "best[height<=480][ext=mp4]/best", "quiet": True}
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(video_url, download=False)
-            stream_url = info['url']
+            info = ydl.extract_info(query, download=False)
+            video = info['entries'][0]
+            url = video['url']
+            title = video['title']
+            thumb = video['thumbnail']
+            duration = int(video['duration'])
 
-        # Assistant Join Logic
+        # Join Group Call (Video Mode)
         await call.join_group_call(
             chat_id,
-            AudioVideoPiped(
-                stream_url,
-                HighQualityAudio(),
-                HighQualityVideo() 
-            )
+            AudioVideoPiped(url, HighQualityAudio(), LowQualityVideo())
         )
         
         await m.delete()
-        text = (
-            f"<b>🎬 Started Video Stream |</b>\n\n"
-            f"<b>‣ Title :</b> <a href='{video_url}'>{title}</a>\n"
-            f"<b>‣ Requested by :</b> `{user_name}`"
-        )
-        
-        pmp = await bot.send_photo(
-            chat_id, 
-            photo=thumb, 
-            caption=text,
+        await bot.send_photo(
+            chat_id,
+            photo=thumb,
+            caption=f"🎬 <b>Playing:</b> {title[:30]}...\n👤 <b>By:</b> {msg.from_user.mention}",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("▢ Stop", callback_data="stop_cb")]])
         )
         
-        # Timer logic
-        asyncio.create_task(update_timer(chat_id, pmp.id, dur_seconds))
+        # Background timer start
+        asyncio.create_task(update_timer(chat_id, m.id, duration))
 
     except Exception as e:
         await m.edit(f"❌ **Error:** `{e}`")
+
 # --- Global Level Variable ---
 
 

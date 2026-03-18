@@ -74,7 +74,7 @@ async def ping_cmd(_, msg: Message):
 @bot.on_message(filters.command("start"))
 async def start_cmd(_, msg: Message):
     # Image URL (Aap apni pasand ki image link yahan daal sakte ho)
-    START_IMG = "https://telegra.ph/file/your_cool_music_image.jpg" 
+    START_IMG = "https://files.catbox.moe/uyum1c.jpg" 
     
     # Stylish Caption
     text = (

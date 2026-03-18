@@ -27,6 +27,10 @@ call = PyTgCalls(assistant)
 
 BOT_START_TIME = datetime.now()
 queues = {}
+# global dictionaries for tracking (Add these near top of file)
+playing_messages = {} # {chat_id: message_id}
+current_playing = {} # {chat_id: {"title": ..., "duration": ..., "start_time": ...}}
+
 
 #MUSIC PLAYING TIMER
 def fmt_time(seconds):
@@ -172,54 +176,31 @@ from pyrogram.enums import ChatMemberStatus # Ye line sabse upar imports mein ad
 @bot.on_message(filters.command("play"))
 async def play_cmd(_, msg: Message):
     chat_id = msg.chat.id
-    
-    # 1. Assistant ki info
+    user_name = msg.from_user.first_name if msg.from_user else "User"
+
+    # 1. Assistant Status & Admin Checks (Wahi purana solid logic)
     try:
         assistant_info = await assistant.get_me()
         ast_id = assistant_info.id
         ast_username = f"@{assistant_info.username}" if assistant_info.username else "Assistant"
-    except Exception as e:
-        return await msg.reply(f"❌ Assistant client start nahi hai: {e}")
-
-    # 2. Advanced Assistant Status Check
-    try:
         ast_member = await bot.get_chat_member(chat_id, ast_id)
         
-        # Check if Banned
         if ast_member.status == ChatMemberStatus.BANNED:
-            return await msg.reply(
-                f"❌ **Assistant is Banned!**\n\n"
-                f"Pls unban the assistant from the group.\n"
-                f"👤 **Name:** {assistant_info.first_name}\n"
-                f"🆔 **ID:** <code>{ast_id}</code>"
-            )
-        
-        # Admin check with Bypass logic
-        # Agar Assistant Admin ya Owner nahi hai toh hi error dega
+            return await msg.reply(f"❌ **Assistant is Banned!**\nPls unban: {ast_username}")
         if ast_member.status not in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
-            return await msg.reply(
-                f"❌ **Assistant is not Admin!**\n\n"
-                f"Please make {ast_username} admin with 'Manage Video Chats' permission."
-            )
-
+            return await msg.reply(f"❌ **Assistant is not Admin!**\nMake {ast_username} admin first.")
     except Exception as e:
-        # Agar Assistant group mein nahi hai (Error: User not participant)
         if "USER_NOT_PARTICIPANT" in str(e):
-            m = await msg.reply("🔄 **Assistant is not in this group.**\n*Inviting Assistant...*")
             try:
                 invitelink = await bot.export_chat_invite_link(chat_id)
                 await assistant.join_chat(invitelink)
-                await m.edit(f"✅ **Assistant Joined!**\nAb use admin banao aur `/play` karo.")
-                return
-            except Exception:
-                return await m.edit(f"❌ Auto-invite failed! Add {ast_username} (ID: <code>{ast_id}</code>) manually.")
-        else:
-            # Agar koi aur random API error hai, toh hum assume karenge ki Assistant admin hai (Bypass)
-            pass
+                return await msg.reply(f"✅ **Assistant Joined!**\nAb admin banao aur play karo.")
+            except: return await msg.reply("❌ Auto-invite failed!")
+        pass
 
-    # 3. Music Logic (Agar checks pass ho gaye)
+    # 2. Search Logic
     if len(msg.command) < 2:
-        return await msg.reply("❌ **Song name toh do!**\nEx: `/play mann mera`")
+        return await msg.reply("❌ **Song name toh do!**")
 
     query = msg.text.split(None, 1)[1].strip()
     m = await msg.reply("🔎 <b>Searching...</b>")
@@ -229,43 +210,60 @@ async def play_cmd(_, msg: Message):
             url = f"https://jio-saa-van.vercel.app/result/?query={quote(query)}"
             async with session.get(url, timeout=12) as r:
                 data = await r.json()
-    except Exception:
-        return await m.edit("❌ API Error!")
+    except: return await m.edit("❌ API Error!")
 
     if not data or len(data) == 0:
         return await m.edit("❌ No results found.")
 
     track = data[0]
     title = track.get("song", "Unknown")
-    artist = track.get("primary_artists") or "Unknown"
     duration = int(track.get("duration", 0))
     stream_url = track.get("media_url") or track.get("download_url")
-    thumb = "https://files.catbox.moe/uyum1c.jpg"
+    thumb = "https://files.catbox.moe/uyum1c.jpg" # Aapka diya hua image link
 
-    # Queue Logic
-    song_data = {"title": title, "url": stream_url, "duration": duration, "by": msg.from_user.first_name}
+    # 3. Queue Logic
+    song_data = {"title": title, "url": stream_url, "duration": duration, "by": user_name}
     queues.setdefault(chat_id, []).append(song_data)
 
-    # UI setup
-    buttons = InlineKeyboardMarkup([
-        [InlineKeyboardButton("⏸ Pᴀᴜsᴇ", callback_data="pause_cb"),
-         InlineKeyboardButton("▶️ Rᴇsᴜᴍᴇ", callback_data="resume_cb"),
-         InlineKeyboardButton("⏭ Sᴋɪᴘ", callback_data="skip_cb")],
-        [InlineKeyboardButton("📢 Cʜᴀɴɴᴇʟ", url="https://t.me/your_channel"),
-         InlineKeyboardButton("👤 Oᴡɴᴇʀ", url="https://t.me/sxyaru")]
-    ])
+    # 4. Progress Bar (Initial)
+    # gen_progressbar(total, current) function use kar rahe hain
+    prog_bar = gen_progressbar(duration, 0) 
 
+    # 5. UI Layout (Exact Image Match)
     text = (
-        f"🎵 <b>Now Playing</b>\n\n"
-        f"📝 <b>Song:</b> <code>{title}</code>\n"
-        f"👤 <b>Artist:</b> <code>{artist}</code>\n"
-        f"⏳ <b>Duration:</b> <code>{fmt_time(duration)}</code>\n"
-        f"🎧 <b>By:</b> {msg.from_user.first_name}\n\n"
-        f"<b>API By:</b> <a href='https://t.me/sxyaru'>sxyaru</a>"
+        f"<b>❍ Sᴛᴀʀᴛᴇᴅ Sᴛʀᴇᴀᴍɪɴɢ |</b>\n\n"
+        f"<b>‣ Tɪᴛʟᴇ :</b> <a href='{stream_url}'>{title}</a>\n"
+        f"<b>‣ Dᴜʀᴀᴛɪᴏɴ :</b> <code>{fmt_time(duration)} MINUTES</code>\n"
+        f"<b>‣ Rᴇǫᴜᴇsᴛᴇᴅ ʙʏ :</b> —🌿❤️`{user_name}`— [7G]"
     )
 
+    # 6. High-End Buttons (Exact Photo Style)
+    buttons = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("▷", callback_data="resume_cb"),
+            InlineKeyboardButton("Ⅱ", callback_data="pause_cb"),
+            InlineKeyboardButton("⏭", callback_data="skip_cb"),
+            InlineKeyboardButton("▢", callback_data="stop_cb")
+        ],
+        [
+            InlineKeyboardButton("⏮ -20s", callback_data="seek_back"),
+            InlineKeyboardButton("↺", callback_data="replay_cb"),
+            InlineKeyboardButton("+20s ⏭", callback_data="seek_forward")
+        ],
+        [
+            InlineKeyboardButton("HELP ↗", callback_data="help_menu"),
+            InlineKeyboardButton("SUPPORT ↗", url="https://t.me/your_channel")
+        ]
+    ])
+
     await m.delete()
-    await bot.send_photo(chat_id, photo=thumb, caption=text, reply_markup=buttons)
+    await bot.send_photo(
+        chat_id, 
+        photo=thumb, 
+        caption=f"{text}\n\n{prog_bar}", 
+        reply_markup=buttons
+    )
+    
     await play_next(chat_id)
 
 
@@ -319,6 +317,7 @@ async def cb_handler(_, query):
     chat_id = query.message.chat.id
     data = query.data
 
+    # --- Start & Help Menus ---
     if data == "help_menu":
         help_text = (
             "<b>📖 <u>ʙᴏᴛ ʜᴇʟᴘ ᴍᴇɴᴜ</u></b>\n\n"
@@ -327,7 +326,6 @@ async def cb_handler(_, query):
             "▶️ <b>/resume</b>  |  📋 <b>/queue</b>\n"
             "📡 <b>/ping</b> - Stats check"
         )
-        # Back button compact
         await query.message.edit_caption(
             caption=help_text,
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ ʙᴀᴄᴋ", callback_data="back_to_start")]])
@@ -346,29 +344,71 @@ async def cb_handler(_, query):
         )
 
     elif data == "back_to_start":
+        bot_me = await bot.get_me()
         text = (
-            "<b>╔══════════════════╗</b>\n"
-            "<b>   🎵 ᴍᴜsɪᴄ ᴘʟᴀʏᴇʀ ʙᴏᴛ 🎵   </b>\n"
-            "<b>╚══════════════════╝</b>\n\n"
-            "<b>👋 ʜᴇʟʟᴏ! ɪ ᴀᴍ ᴀ ғᴀsᴛ & ᴘᴏᴡᴇʀғᴜʟ</b>\n"
-            "<b>ᴠᴏɪᴄᴇ ᴄʜᴀᴛ ᴍᴜsɪᴄ ᴘʟᴀʏᴇʀ ʙᴏᴛ.</b>"
-        )
+        "<b>╔══════════════════╗</b>\n"
+        "<b>   🎵 ᴍᴜsɪᴄ ᴘʟᴀʏᴇʀ ʙᴏᴛ 🎵   </b>\n"
+        "<b>╚══════════════════╝</b>\n\n"
+        "<b>👋 ʜᴇʟʟᴏ! ɪ ᴀᴍ ᴀ ғᴀsᴛ & ᴘᴏᴡᴇʀғᴜʟ</b>\n"
+        "<b>ᴠᴏɪᴄᴇ ᴄʜᴀᴛ ᴍᴜsɪᴄ ᴘʟᴀʏᴇʀ ʙᴏᴛ.</b>\n\n"
+        "✨ <b>ᴍᴀᴅᴇ ᴡɪᴛʜ ❤️ ʙʏ:</b> <a href='https://t.me/sxyaru'>sxyaru</a>"
+       )
         buttons = InlineKeyboardMarkup([
             [InlineKeyboardButton("❓ ʜᴇʟᴘ", callback_data="help_menu"), InlineKeyboardButton("📂 ʀᴇᴘᴏ", callback_data="repo_menu")],
             [InlineKeyboardButton("👤 ᴏᴡɴᴇʀ", url="https://t.me/sxyaru"), InlineKeyboardButton("📢 sᴜᴘᴘᴏʀᴛ", url="https://t.me/your_channel")],
-            [InlineKeyboardButton("➕ ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ", url=f"https://t.me/{bot.me.username}?startgroup=true")]
+            [InlineKeyboardButton("➕ ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ", url=f"https://t.me/{bot_me.username}?startgroup=true")]
         ])
         await query.message.edit_caption(caption=text, reply_markup=buttons)
 
-    # Music Player Buttons (Compact Row)
-    # Jab /play karoge, tab ye buttons 1 hi line mein ayenge
+    # --- Play Music Controls (Photo Buttons) ---
     elif data == "pause_cb":
-        try: await call.pause_stream(chat_id); await query.answer("Paused ⏸")
-        except: await query.answer("Nothing playing!", show_alert=True)
+        try:
+            await call.pause_stream(chat_id)
+            await query.answer("Paused ⏸")
+        except:
+            await query.answer("Nothing playing!", show_alert=True)
 
     elif data == "resume_cb":
-        try: await call.resume_stream(chat_id); await query.answer("Resumed ▶️")
-        except: await query.answer("Nothing playing!", show_alert=True)
+        try:
+            await call.resume_stream(chat_id)
+            await query.answer("Resumed ▶️")
+        except:
+            await query.answer("Nothing playing!", show_alert=True)
+
+    elif data == "skip_cb":
+        try:
+            # Skip logic (Current song pop and play next)
+            if chat_id in queues:
+                queues[chat_id].pop(0)
+            await play_next(chat_id)
+            await query.answer("Skipped ⏭")
+        except:
+            await query.answer("Nothing to skip!", show_alert=True)
+
+    elif data == "stop_cb":
+        try:
+            await call.leave_group_call(chat_id)
+            queues.pop(chat_id, None)
+            await query.message.delete()
+            await query.answer("Stopped & Left VC ⏹")
+        except:
+            await query.answer("Assistant not in VC!", show_alert=True)
+
+    # --- Advanced Controls (Seek & Replay) ---
+    elif data == "seek_forward":
+        await query.answer("Seeking +20s... ⏭")
+        # Note: Seek requires proper frame support in PyTgCalls
+
+    elif data == "seek_back":
+        await query.answer("Seeking -20s... ⏮")
+
+    elif data == "replay_cb":
+        try:
+            await play_next(chat_id)
+            await query.answer("Replaying... ↺")
+        except:
+            await query.answer("Error replaying!", show_alert=True)
+
 
 
 

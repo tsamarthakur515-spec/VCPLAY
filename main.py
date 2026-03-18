@@ -247,25 +247,29 @@ async def play_cmd(_, msg: Message):
     chat_id = msg.chat.id
     user_name = msg.from_user.first_name if msg.from_user else "User"
 
-    # 1. Assistant Status & Admin Checks (Wahi purana solid logic)
+    # 1. Assistant Status & Admin Checks
     try:
         assistant_info = await assistant.get_me()
         ast_id = assistant_info.id
         ast_username = f"@{assistant_info.username}" if assistant_info.username else "Assistant"
-        ast_member = await bot.get_chat_member(chat_id, ast_id)
         
-        if ast_member.status == ChatMemberStatus.BANNED:
-            return await msg.reply(f"❌ **Assistant is Banned!**\nPls unban: {ast_username}")
-        if ast_member.status not in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
-            return await msg.reply(f"❌ **Assistant is not Admin!**\nMake {ast_username} admin first.")
+        try:
+            ast_member = await bot.get_chat_member(chat_id, ast_id)
+            if ast_member.status == ChatMemberStatus.BANNED:
+                return await msg.reply(f"❌ **Assistant is Banned!**\nPls unban {ast_username} (ID: <code>{ast_id}</code>)")
+            if ast_member.status not in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
+                return await msg.reply(f"❌ **Assistant is not Admin!**\nMake {ast_username} admin with 'Manage Video Chats' permission.")
+        except Exception as e:
+            if "USER_NOT_PARTICIPANT" in str(e):
+                m = await msg.reply(f"🔄 **Inviting Assistant to the group...**")
+                try:
+                    invitelink = await bot.export_chat_invite_link(chat_id)
+                    await assistant.join_chat(invitelink)
+                    return await m.edit(f"✅ **Assistant Joined!**\nAb use admin banao aur `/play` karo.")
+                except: return await m.edit("❌ Auto-invite failed! Assistant ko manually add karo.")
+            pass
     except Exception as e:
-        if "USER_NOT_PARTICIPANT" in str(e):
-            try:
-                invitelink = await bot.export_chat_invite_link(chat_id)
-                await assistant.join_chat(invitelink)
-                return await msg.reply(f"✅ **Assistant Joined!**\nAb admin banao aur play karo.")
-            except: return await msg.reply("❌ Auto-invite failed!")
-        pass
+        return await msg.reply(f"❌ Assistant Error: {e}")
 
     # 2. Search Logic
     if len(msg.command) < 2:
@@ -288,26 +292,36 @@ async def play_cmd(_, msg: Message):
     title = track.get("song", "Unknown")
     duration = int(track.get("duration", 0))
     stream_url = track.get("media_url") or track.get("download_url")
-    thumb = "https://files.catbox.moe/uyum1c.jpg" # Aapka diya hua image link
+    thumb = "https://files.catbox.moe/uyum1c.jpg"
 
     # 3. Queue Logic
     song_data = {"title": title, "url": stream_url, "duration": duration, "by": user_name}
     queues.setdefault(chat_id, []).append(song_data)
 
-    # 4. Progress Bar (Initial)
-    # gen_progressbar(total, current) function use kar rahe hain
-    prog_bar = gen_progressbar(duration, 0) 
+    # 4. 🔥 CRITICAL STEP: TRY JOINING FIRST 🔥
+    # Hum pehle play_next ko call karenge aur check karenge success hua ya nahi
+    success = await play_next(chat_id)
 
-    # 5. UI Layout (Exact Image Match)
+    if not success:
+        # Agar join fail hua (VC off hai), toh menu mat dikhao
+        await m.delete()
+        return
+
+    # 5. UI Layout (Success hone par hi dikhega)
+    btn_prog = gen_btn_progressbar(duration, 0) # Button wala progress bar
+    
     text = (
-        f"<b>❍ Sᴛᴀʀᴛᴇᴅ Sᴛʀᴇᴀᴍɪɴɢ |</b>\n\n"
-        f"<b>‣ Tɪᴛʟᴇ :</b> <a href='{stream_url}'>{title}</a>\n"
-        f"<b>‣ Dᴜʀᴀᴛɪᴏɴ :</b> <code>{fmt_time(duration)} MINUTES</code>\n"
-        f"<b>‣ Rᴇǫᴜᴇsᴛᴇᴅ ʙʏ :</b> —🌿❤️`{user_name}`— [7G]"
+        f"<b>⭮ Sᴛᴀʀᴛᴇᴅ Sᴛʀᴇᴀᴍɪɴɢ |</b>\n\n"
+        f"<b>▶ Tɪᴛʟᴇ :</b> <code>{title}</code>\n"
+        f"<b>▶ Dᴜʀᴀᴛɪᴏɴ :</b> <code>{fmt_time(duration)} MINUTES</code>\n"
+        f"<b>▶ Rᴇǫᴜᴇsᴛᴇᴅ ʙʏ :</b> —🌿❤️`{user_name}`— [7G]"
     )
 
-    # 6. High-End Buttons (Exact Photo Style)
     buttons = InlineKeyboardMarkup([
+        [
+            # Progress Bar Button (Image style)
+            InlineKeyboardButton(text=f"{btn_prog} +", callback_data="prog_update")
+        ],
         [
             InlineKeyboardButton("▷", callback_data="resume_cb"),
             InlineKeyboardButton("Ⅱ", callback_data="pause_cb"),
@@ -326,14 +340,8 @@ async def play_cmd(_, msg: Message):
     ])
 
     await m.delete()
-    await bot.send_photo(
-        chat_id, 
-        photo=thumb, 
-        caption=f"{text}\n\n{prog_bar}", 
-        reply_markup=buttons
-    )
-    
-    await play_next(chat_id)
+    await bot.send_photo(chat_id, photo=thumb, caption=text, reply_markup=buttons)
+
 
 
 

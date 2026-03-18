@@ -1,11 +1,14 @@
 import math
 import time
+import random
 import psutil
 from datetime import datetime, timedelta
 import asyncio
 import aiohttp
 from urllib.parse import quote
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
+from pyrogram.errors import FloodWait
 from pyrogram import Client, filters, idle
 from pyrogram.enums import ParseMode
 from pyrogram.types import Message
@@ -20,6 +23,27 @@ API_ID = 33603336
 API_HASH = "c9683a8ec3b886c18219f650fc8ed429"
 BOT_TOKEN = "8411080834:AAE85QH-LpaiOpht-RSMpwYQPus1jHONnu4"
 SESSION_STRING = "BQE-4i0ASxu8TXk4s870tFMn-D2Ijs-7DaTep8qcmRnZuowGYTiKDzzy9fKRT3pCc7aFI9oql0Rp5k1FkymDhRbewYPN11p5G7exMCs-z2bdMPuRoJCF60r7p_xq0TBjtLw5P1f-pXHHRxeXSAq0nKyNglv2pZ-GVCbYL4J-OwIkfck4wZyfiU0H58LZla5Il4VmVww-ewK3roa4mVjIxGKYoFva7LqYEf9Iti77jLz7HW7gCfuNessLDXqH1se4DuOSmoJzbacJxofENDQJChGjP4K7gbkMQQKwjCQfndvTmHLyDnc5jDqwfngZK1ogepmyiXZhhzHVebIieznK4DXTM1Q7pAAAAAHKarFXAA"
+# --- Random image links ---
+WELCOME_IMAGES = [
+    "https://files.catbox.moe/d8mnv9.jpg",
+    "https://files.catbox.moe/4d7s4u.jpg",
+    "https://files.catbox.moe/orqaah.jpg"
+]
+# --- Welcome message template ---
+WELCOME_TEXT = """🌸✨ ──────────────────── ✨🌸  
+🎊 <b>ᴡᴇʟᴄᴏᴍᴇ ᴛᴏ ᴏᴜʀ ɢʀᴏᴜᴘ</b> 🎊  
+  
+🌹 <b>ɴᴀᴍᴇ</b> ➤ {name}  
+🆔 <b>ᴜsᴇʀ ɪᴅ</b> ➤ <code>{user_id}</code>  
+🏠 <b>ɢʀᴏᴜᴘ</b> ➤ {chat_title}  
+  
+💕 <b>ᴡᴇ'ʀᴇ sᴏ ʜᴀᴘᴘʏ ᴛᴏ ʜᴀᴠᴇ ʏᴏᴜ ʜᴇʀᴇ!</b>  
+✨ <b>ғᴇᴇʟ ғʀᴇᴇ ᴛᴏ sʜᴀʀᴇ ᴀɴᴅ ᴇɴᴊᴏʏ!</b>  
+⚡ <b>ᴇɴᴊᴏʏ ʏᴏᴜʀ ᴇxᴘᴇʀɪᴇɴᴄᴇ ᴡɪᴛʜ ᴛʜɪs ʙᴏᴛ</b>  
+  
+💝 <b>ᴘᴏᴡᴇʀᴇᴅ ʙʏ ➤</b> <a href="https://t.me/sxyaru">˹ᴀʀᴜ × ᴀᴘɪ˼ × [ʙᴏᴛs]</a>  
+🌸✨ ──────────────────── ✨🌸  
+"""
 
 bot = Client("musicbot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 assistant = Client("assistant", api_id=API_ID, api_hash=API_HASH, session_string=SESSION_STRING)
@@ -60,6 +84,52 @@ def gen_progressbar(total_sec, current_sec):
     total_str = fmt_time(total_sec)
     
     return f"<code>{current_str}</code> {bar} <code>{total_str}</code>"
+
+
+#WELCOME FUNCTION FOR USER WHO JOIN GROUP
+# --- Handler for new members ---
+@bot.on_message(filters.new_chat_members)
+async def welcome_user(_, msg: Message):
+    for user in msg.new_chat_members:
+        try:
+            name = user.first_name or "User"
+            user_id = user.id
+            chat_title = msg.chat.title
+            
+            # Random image select karna
+            photo = random.choice(WELCOME_IMAGES)
+            
+            # Caption format karna
+            caption = WELCOME_TEXT.format(
+                name=name, 
+                user_id=user_id, 
+                chat_title=chat_title
+            )
+
+            # Buttons setup
+            buttons = InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("• ᴄʜᴀɴɴᴇʟ •", url="https://t.me/suruchisupport"),
+                    InlineKeyboardButton("• sᴜᴘᴘᴏʀᴛ •", url="https://t.me/+fYnrOJSQP9I4ODlh")
+                ]
+            ])
+
+            # Welcome message bhejna
+            wel_msg = await bot.send_photo(
+                msg.chat.id,
+                photo=photo,
+                caption=caption,
+                reply_markup=buttons
+            )
+
+            # 60 Seconds wait then delete
+            await asyncio.sleep(60)
+            await wel_msg.delete()
+
+        except FloodWait as e:
+            await asyncio.sleep(e.value)
+        except Exception as e:
+            print(f"[WELCOME ERROR] {e}")
 
 
 @bot.on_message(filters.command("ping"))
@@ -169,9 +239,6 @@ async def start_cmd(_, msg: Message):
         reply_markup=buttons
     )
 
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-
-from pyrogram.enums import ChatMemberStatus # Ye line sabse upar imports mein add kar dena
 
 @bot.on_message(filters.command("play"))
 async def play_cmd(_, msg: Message):

@@ -213,15 +213,15 @@ async def ping_cmd(_, msg: Message):
 
     # 3. Final message edit
     text = (
-        "<b>🏓 Pong!</b>\n"
+        "<b>🏓 ᴘᴏɴɢ!</b>\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
-        f"🚀 <b>Latency:</b> <code>{latency} ms</code>\n"
-        f"🆙 <b>Uptime:</b> <code>{uptime}</code>\n"
-        f"💻 <b>CPU:</b> <code>{cpu}%</code>\n"
-        f"📊 <b>RAM:</b> <code>{ram}%</code>\n"
-        f"💾 <b>Disk:</b> <code>{disk}%</code>\n"
+        f"🚀 <b>ʟᴀᴛᴇɴᴄʏ:</b> <code>{latency} ms</code>\n"
+        f"🆙 <b>ᴜᴘᴛɪᴍᴇ:</b> <code>{uptime}</code>\n"
+        f"💻 <b>ᴄᴘᴜ:</b> <code>{cpu}%</code>\n"
+        f"📊 <b>ʀᴀᴍ:</b> <code>{ram}%</code>\n"
+        f"💾 <b>ᴅɪsᴋ:</b> <code>{disk}%</code>\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
-        "👤 <b>By:</b> <a href='https://t.me/sxyaru'>sxyaru</a>"
+        "👤 <b>ʙʏ:</b> <a href='https://t.me/sxyaru'>ᴀʀᴜ × ᴀᴘɪ [ʙᴏᴛs]</a>"
     )
 
     await m.edit_text(text, disable_web_page_preview=True)
@@ -331,7 +331,7 @@ async def play_cmd(_, msg: Message):
     if len(msg.command) < 2:
         return await msg.reply("❌ **ɢɪᴠᴇ ǫᴜᴇʀʏ!**")
 
-    query = msg.text.split(None, 1)[1].strip()
+    query = msg.text.split(No 1)[1].strip()
     m = await msg.reply("🔎 <b>sᴇᴀʀᴄʜɪɴɢ...</b>")
 
     try:
@@ -375,7 +375,9 @@ async def play_cmd(_, msg: Message):
         f"<b>❍ Sᴛᴀʀᴛᴇᴅ Sᴛʀᴇᴀᴍɪɴɢ |</b>\n\n"
         f"<b>‣ Tɪᴛʟᴇ :</b> <a href='{stream_url}'>{title}</a>\n"
         f"<b>‣ Dᴜʀᴀᴛɪᴏɴ :</b> <code>{fmt_time(duration)} ᴍs</code>\n"
-        f"<b>‣ Rᴇǫᴜᴇsᴛᴇᴅ ʙʏ :</b> `{user_name}`"
+        f"<b>‣ Rᴇǫᴜᴇsᴛᴇᴅ ʙʏ :</b> `{user_name}`"\n
+        f"<b>‣ ʙᴏᴛ ʙᴀsᴇᴅ ᴏɴ : ᴀʀᴜ x ᴊɪᴏsᴀᴠᴀɴ</b"\n
+        f"<b>‣ ᴀᴘɪ ʙʏ:</b> <a href='https://t.me/sxyaru'>ᴀʀᴜ × ᴀᴘɪ [ʙᴏᴛs]</a>"
     )
 
     # Exact Photo Style (Row 2 mein 4 compact buttons)
@@ -452,13 +454,13 @@ async def play_next(chat_id: int):
             queues[chat_id].pop(0)
             
         # Error message format
-        error_text = f"❌ **Assistant join nahi kar pa raha!**\n\n"
+        error_text = f"❌ **ᴘʟᴇᴀsᴇ ᴏɴ ᴛʜᴇ ᴠᴄ**\n\n"
         
         # Special check for VC not started
         if "CHAT_ADMIN_REQUIRED" in str(e):
-            error_text += "💡 **Reason:** Assistant ke paas 'Manage Video Chats' permission nahi hai."
+            error_text += "💡 **Reason:** ᴀssɪsᴛᴀɴᴛ ʜᴀᴠᴇ ɴᴏ ᴘᴇʀᴍɪssɪᴏɴ ᴏғ ᴍᴀɴᴀɢᴇᴅ ᴠɪᴅᴇᴏ ᴄʜᴀᴛ."
         elif "not in a group call" in str(e).lower() or "GROUP_CALL_NOT_MODIFIED" in str(e):
-            error_text += "💡 **Reason:** Group mein Voice Chat (VC) start nahi hai. Pehle VC start karo!"
+            error_text += "💡 **Reason:** ғɪʀsᴛ sᴛᴀʀᴛ ᴛʜᴇ ᴠᴏɪᴄᴇ ᴄʜᴀᴛ ᴠᴄ!"
         else:
             error_text += f"💬 **Error:** <code>{e}</code>"
             

@@ -347,14 +347,15 @@ async def play_cmd(_, msg: Message):
 
 
 async def play_next(chat_id: int):
+    # 1. Check karo queue mein gaana hai ya nahi
     if chat_id not in queues or not queues[chat_id]:
-        return
+        return False
     
     song = queues[chat_id][0]
     url = song["url"]
 
     try:
-        # Assistant join karne ki koshish karega
+        # 2. Assistant ko join ya stream change karwana
         try:
             await call.join_group_call(
                 chat_id,
@@ -362,27 +363,38 @@ async def play_next(chat_id: int):
                 stream_type=StreamType().pulse_stream
             )
         except Exception:
-            # Agar Assistant pehle se VC mein hai toh sirf gaana change hoga
+            # Agar pehle se VC mein hai toh sirf stream badlo
             await call.change_stream(
                 chat_id,
                 AudioPiped(url, HighQualityAudio())
             )
+        
+        # Agar yahan tak code pahuncha matlab SUCCESS!
+        return True
             
     except Exception as e:
         print(f"Assistant Join Error: {e}")
         
-        # Queue se gaana hatao taaki loop na bane
+        # Error aane par queue se gaana hata do
         if chat_id in queues:
             queues[chat_id].pop(0)
             
-        # Sahi error message dikhane ke liye
+        # Error message format
         error_text = f"❌ **Assistant join nahi kar pa raha!**\n\n"
+        
+        # Special check for VC not started
         if "CHAT_ADMIN_REQUIRED" in str(e):
             error_text += "💡 **Reason:** Assistant ke paas 'Manage Video Chats' permission nahi hai."
+        elif "not in a group call" in str(e).lower() or "GROUP_CALL_NOT_MODIFIED" in str(e):
+            error_text += "💡 **Reason:** Group mein Voice Chat (VC) start nahi hai. Pehle VC start karo!"
         else:
-            error_text += f"💬 **Error:** `{e}`"
+            error_text += f"💬 **Error:** <code>{e}</code>"
             
         await bot.send_message(chat_id, error_text)
+        
+        # Matlab FAILED!
+        return False
+
 
 
 

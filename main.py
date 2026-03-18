@@ -113,8 +113,8 @@ async def update_timer(chat_id, message_id, duration):
                 InlineKeyboardButton("+20s ⏭", callback_data="seek_forward")
             ],
             [
-                InlineKeyboardButton("HELP ↗", callback_data="help_menu"),
-                InlineKeyboardButton("SUPPORT ↗", url="https://t.me/your_channel")
+                InlineKeyboardButton("ᴏᴡɴᴇʀ↗", url="https://t.me/ll_PANDA_BBY_ll"),
+                InlineKeyboardButton("sᴜᴘᴘᴏʀᴛ ↗", url="https://t.me/sxyaru")
             ]
         ])
         
@@ -159,8 +159,8 @@ async def welcome_user(client, msg: Message):
 
             buttons = InlineKeyboardMarkup([
                 [
-                    InlineKeyboardButton("• ᴄʜᴀɴɴᴇʟ •", url="https://t.me/suruchisupport"),
-                    InlineKeyboardButton("• sᴜᴘᴘᴏʀᴛ •", url="https://t.me/+fYnrOJSQP9I4ODlh")
+                    InlineKeyboardButton("• ᴄʜᴀɴɴᴇʟ •", url="https://t.me/sxyaru"),
+                    InlineKeyboardButton("• ᴏᴡɴᴇʀ •", url="https://t.me/ll_PANDA_BBY_ll")
                 ]
             ])
 
@@ -389,9 +389,8 @@ async def play_cmd(_, msg: Message):
             InlineKeyboardButton("+20s ⏭", callback_data="seek_forward")
         ],
         [
-            # Row 4: 2 Buttons
-            InlineKeyboardButton("HELP ↗", callback_data="help_menu"),
-            InlineKeyboardButton("SUPPORT ↗", url="https://t.me/your_channel")
+            InlineKeyboardButton("ᴏᴡɴᴇʀ↗", url="https://t.me/ll_PANDA_BBY_ll"),
+            InlineKeyboardButton("sᴜᴘᴘᴏʀᴛ ↗", url="https://t.me/sxyaru")
         ]
     ])
 

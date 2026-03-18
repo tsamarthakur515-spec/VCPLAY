@@ -156,31 +156,41 @@ async def set_boost_level(_, msg: Message):
     except:
         await msg.reply("❌ Number do Brahh!")
 
+from pytgcalls.types.input_stream import AudioPiped, HighQualityAudio
+
 @bot.on_message(filters.command("boost_on"))
 async def start_boost(_, msg: Message):
     chat_id = msg.chat.id
-    
-    # Ye hai asali Ukhi Filter String
-    ukhi_filt = (
-        f"bass=g={UKHI_LEVEL*2},volume={UKHI_LEVEL},"
-        f"aecho=0.8:0.8:40:0.5,asubboost=cutoff=100:feedback=0.4"
-    )
+    ukhi_filt = f"bass=g={UKHI_LEVEL*2},volume={UKHI_LEVEL},aecho=0.8:0.8:40:0.5"
 
     try:
         await msg.reply("🎤 **Assistant is now listening & boosting...**")
         
-        # NAYE VERSION KA LOGIC: 'filters' ki jagah 'ffmpeg_parameters'
+        # Sabse safe tareeka: Direct FFMPEG string pass karna
         await call.join_group_call(
             chat_id,
             AudioPiped(
-                "pulse", 
+                f"pulse", # Input source
                 HighQualityAudio(),
-                ffmpeg_parameters=f"-af {ukhi_filt}" # <--- FIX YAHAN HAI
+                # Yahan hum 'additional_ffmpeg_parameters' try karenge
+                additional_ffmpeg_parameters=f"-af {ukhi_filt}" 
             )
         )
     except Exception as e:
-        # Agar 'pulse' na chale toh 'default' try karna
-        await msg.reply(f"❌ Error: {e}")
+        # AGAR PHIR BHI ERROR AAYE, TOH YE TRY KARO (Final Boss):
+        try:
+             await call.join_group_call(
+                chat_id,
+                AudioPiped(
+                    "pulse",
+                    HighQualityAudio()
+                    # Bina filters ke join karo pehle, check karne ke liye
+                )
+            )
+             await msg.reply("⚠️ **Note:** Filters support nahi ho rahe, par Assistant join ho gaya hai.")
+        except:
+            await msg.reply(f"❌ Error: {e}")
+
 
 
 @bot.on_message(filters.command("boost_off"))

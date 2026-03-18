@@ -36,49 +36,93 @@ def fmt_time(seconds: int) -> str:
 async def start_cmd(_, msg: Message):
     await msg.reply_text("<b>🎶 Music Bot is Alive!</b>\nUse /play [song name] to start.")
 
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
 @bot.on_message(filters.command("play"))
 async def play_cmd(_, msg: Message):
     if len(msg.command) < 2:
-        return await msg.reply("Usage: /play [song name]")
+        return await msg.reply("❌ Give a song name.\nEx: <code>/play mann mera</code>")
 
-    chat_id = msg.chat.id
-    query = msg.text.split(None, 1)[1]
-    m = await msg.reply("🔎 Searching...")
-
-    # Assistant Check
-    try:
-        await assistant.get_chat(chat_id)
-    except Exception:
-        return await m.edit("❌ **Assistant is not in this group!**\nPlease add the Assistant account to this group first.")
+    query = msg.text.split(None, 1)[1].strip()
+    m = await msg.reply("🔎 <b>Searching...</b>")
 
     try:
         async with aiohttp.ClientSession() as session:
             url = f"https://jio-saa-van.vercel.app/result/?query={quote(query)}"
-            async with session.get(url, timeout=10) as r:
+            async with session.get(url, timeout=12) as r:
                 data = await r.json()
-                if not data or not isinstance(data, list):
-                    return await m.edit("No results found.")
-                track = data[0]
-    except Exception as e:
-        return await m.edit(f"API Error: {e}")
+    except Exception as ex:
+        return await m.edit(f"❌ API error: {ex.__class__.__name__}")
 
+    if not data or not isinstance(data, list) or len(data) == 0:
+        return await m.edit("❌ No results found.")
+
+    track = data[0]
     stream_url = track.get("media_url") or track.get("download_url")
     if not stream_url:
-        return await m.edit("Could not find a playable link.")
+        return await m.edit("❌ No stream URL found.")
 
+    # Details Extraction
+    title = track.get("song", "Unknown")
+    artist = track.get("primary_artists") or track.get("singers", "Unknown")
+    duration = int(track.get("duration", 0))
+    thumb = track.get("image") or "https://telegra.ph/file/default_music.jpg" # Default image agar na mile
+    chat_id = msg.chat.id
+    requester = msg.from_user.first_name
+
+    # Queue Logic
     song_data = {
-        "title": track.get("song", "Unknown"),
-        "url": stream_url,
-        "duration": int(track.get("duration", 0)),
-        "by": msg.from_user.first_name
+        "title": title, 
+        "url": stream_url, 
+        "duration": duration, 
+        "by": requester,
+        "thumb": thumb
     }
-
     queues.setdefault(chat_id, []).append(song_data)
 
-    if len(queues[chat_id]) > 1:
-        return await m.edit(f"✅ Queued at #{len(queues[chat_id])}: {song_data['title']}")
+    # Buttons Setup
+    buttons = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("⏸ Pause", callback_data="pause_cb"),
+            InlineKeyboardButton("▶️ Resume", callback_data="resume_cb"),
+            InlineKeyboardButton("⏭ Skip", callback_data="skip_cb")
+        ],
+        [
+            InlineKeyboardButton("📢 Channel", url="https://t.me/your_channel"), # Apna channel link dalein
+            InlineKeyboardButton("👤 Owner", url="https://t.me/sxyaru")
+        ]
+    ])
 
-    await play_next(chat_id, m)
+    text = (
+        f"🎵 <b>Now Playing</b>\n\n"
+        f"📝 <b>Song:</b> <code>{title}</code>\n"
+        f"👤 <b>Artist:</b> <code>{artist}</code>\n"
+        f"⏳ <b>Duration:</b> <code>{fmt_time(duration)}</code>\n"
+        f"🎧 <b>Requested by:</b> {requester}\n\n"
+        f"<b>API By:</b> <a href='https://t.me/sxyaru'>sxyaru</a>"
+    )
+
+    if len(queues[chat_id]) > 1:
+        # Agar queue mein add hua hai toh photo ke saath reply karega
+        await m.delete()
+        return await bot.send_photo(
+            chat_id, 
+            photo=thumb, 
+            caption=f"✅ <b>Queued at #{len(queues[chat_id])}</b>\n\n{text}",
+            reply_markup=buttons
+        )
+
+    # Play Next & Edit Message
+    await m.delete() # 'Searching' message delete karke photo bhejega
+    await bot.send_photo(
+        chat_id, 
+        photo=thumb, 
+        caption=text,
+        reply_markup=buttons
+    )
+    
+    await play_next(chat_id)
+
 
 async def play_next(chat_id: int, msg: Message = None):
     if chat_id not in queues or not queues[chat_id]:

@@ -506,7 +506,7 @@ async def cb_handler(_, query):
     if data == "help_menu":
         help_text = (
             "<b> ʙᴏᴛ ʜᴇʟᴘ ᴍᴇɴᴜ</b>\n\n"
-            "<b>/play</b> [ꜱᴏɴɢ]  
+            "<b>/play</b> [ꜱᴏɴɢ ɴᴀᴍᴇ]</b>\n"  
             "<b>/ping</b> - Stats check"
         )
         await query.message.edit_caption(

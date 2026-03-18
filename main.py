@@ -61,28 +61,72 @@ current_playing = {} # {chat_id: {"title": ..., "duration": ..., "start_time": .
 
 #MUSIC PLAYING TIMER
 def fmt_time(seconds):
-    if seconds <= 0:
-        return "00:00"
     minutes, seconds = divmod(seconds, 60)
     hours, minutes = divmod(minutes, 60)
     if hours > 0:
         return f"{hours:02}:{minutes:02}:{seconds:02}"
     return f"{minutes:02}:{seconds:02}"
-#MUSIC PROGRESS BAR
 
 def gen_btn_progressbar(total_sec, current_sec):
     if total_sec == 0: total_sec = 1
     percentage = (current_sec / total_sec) * 100
     percentage = min(100, max(0, percentage))
     
-    # Buttons chote hote hain toh bar 12-15 blocks ka rakhte hain
+    # 12 blocks for better fit
     bar_length = 12
     filled_blocks = int(percentage / (100 / bar_length))
     
-    # Image wala style (00:10 ▬▬▬●▬▬▬ 4:58)
-    bar = "▬" * filled_blocks + "●" + "▬" * (bar_length - filled_blocks)
+    # Text wale progress bar ki jagah, hum simple blocks use karenge
+    bar = "▬" * filled_blocks + "▬" + "▬" * (bar_length - filled_blocks)
     
     return f"{fmt_time(current_sec)} {bar} {fmt_time(total_sec)}"
+
+# TIMER LOOPER (Ye background mein chalega)
+# Humein queues aur call variables yahan chahiye honge
+async def update_timer(chat_id, message_id, duration):
+    current_time = 0
+    while current_time < duration:
+        # Har 15 second mein update safe hai limit se bachne ke liye
+        await asyncio.sleep(15)
+        current_time += 15
+        
+        # Check if chat still playing
+        if chat_id not in queues:
+            break
+            
+        new_prog = gen_btn_progressbar(duration, current_time)
+        
+        # New buttons jisme timer update hua hai (BAAKI SAME)
+        new_buttons = InlineKeyboardMarkup([
+            [InlineKeyboardButton(text=new_prog, callback_data="prog_update")],
+            [
+                InlineKeyboardButton("▷", callback_data="resume_cb"),
+                InlineKeyboardButton("Ⅱ", callback_data="pause_cb"),
+                InlineKeyboardButton("⏭", callback_data="skip_cb"),
+                InlineKeyboardButton("▢", callback_data="stop_cb")
+            ],
+            [
+                InlineKeyboardButton("⏮ -20s", callback_data="seek_back"),
+                InlineKeyboardButton("↺", callback_data="replay_cb"),
+                InlineKeyboardButton("+20s ⏭", callback_data="seek_forward")
+            ],
+            [
+                InlineKeyboardButton("HELP ↗", callback_data="help_menu"),
+                InlineKeyboardButton("SUPPORT ↗", url="https://t.me/your_channel")
+            ]
+        ])
+        
+        try:
+            # SIRF BUTTONS EDIT KAREINGE (Caption nahi badlega)
+            # Yahan hum main 'bot' instance use kar rahe hain
+            await bot.edit_message_reply_markup(
+                chat_id,
+                message_id,
+                reply_markup=new_buttons
+            )
+        except Exception:
+            # Message delete ho gaya ya koi aur issue
+            break
 
 
 #WELCOME FUNCTION FOR USER WHO JOIN GROUP

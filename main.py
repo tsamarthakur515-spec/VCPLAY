@@ -15,8 +15,7 @@ from pyrogram.types import Message
 from pyrogram.errors import PeerIdInvalid, ChannelInvalid
 from pyrogram.enums import ChatMemberStatus # Ye line sabse upar imports mein add kar dena
 from pytgcalls import PyTgCalls, StreamType
-from pytgcalls.types.input_stream import AudioPiped
-from pytgcalls.types.input_stream.quality import HighQualityAudio
+from pytgcalls.types import AudioPiped, HighQualityAudio
 
 # ───────────── CONFIG ─────────────
 API_ID = 33603336

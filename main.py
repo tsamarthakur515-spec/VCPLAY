@@ -213,21 +213,30 @@ async def play_next(chat_id: int):
         return
     
     song = queues[chat_id][0]
+    url = song["url"]
+
     try:
+        # Check if Assistant is already in call
         try:
             await call.join_group_call(
                 chat_id,
-                AudioPiped(song["url"], HighQualityAudio()),
+                AudioPiped(url, HighQualityAudio()),
                 stream_type=StreamType().pulse_stream
             )
         except Exception:
+            # If already joined, just change the stream
             await call.change_stream(
                 chat_id,
-                AudioPiped(song["url"], HighQualityAudio())
+                AudioPiped(url, HighQualityAudio())
             )
+            
     except Exception as e:
-        print(f"Error details: {e}")
-        await bot.send_message(chat_id, f"❌ **Assistant Error:** `{e}`")
+        print(f"Assistant Join Error: {e}")
+        # Agar error aaye toh queue se hata do taki bot stuck na ho
+        if chat_id in queues:
+            queues[chat_id].pop(0)
+        await bot.send_message(chat_id, f"❌ **Assistant join nahi kar pa raha!**\n`{e}`")
+
 
 
 

@@ -286,6 +286,7 @@ async def start_cmd(_, msg: Message):
     )
 
 
+# --- Ye aapka Updated Play Command hai ---
 @bot.on_message(filters.command("play"))
 async def play_cmd(_, msg: Message):
     chat_id = msg.chat.id
@@ -343,29 +344,37 @@ async def play_cmd(_, msg: Message):
     queues.setdefault(chat_id, []).append(song_data)
 
     # 4. 🔥 CRITICAL STEP: TRY JOINING FIRST 🔥
-    success = await play_next(chat_id)
+    # Pehle join karne ki koshish (True/False return)
+    # Humein play_next variable mein return status capture karna hai
+    try:
+        join_status = await play_next(chat_id)
+    except:
+        join_status = False # play_next failed explicitly
 
-    if not success:
+    if not join_status:
+        # Agar join fail hua, toh searching message delete karo aur menu mat bhejo
         await m.delete()
         return
 
-    # 5. UI Layout (Buttons set to Small/Compact)
+    # 5. UI Layout (Buttons set to Small/Compact and Timer fix)
+    # gen_btn_progressbar function upar paste kiya hai
     btn_prog = gen_btn_progressbar(duration, 0) 
     
     text = (
-        f"<b>⭮ Sᴛᴀʀᴛᴇᴅ Sᴛʀᴇᴀᴍɪɴɢ |</b>\n\n"
-        f"<b>▶ Tɪᴛʟᴇ :</b> <code>{title}</code>\n"
-        f"<b>▶ Dᴜʀᴀᴛɪᴏɴ :</b> <code>{fmt_time(duration)} MINUTES</code>\n"
-        f"<b>▶ Rᴇǫᴜᴇsᴛᴇᴅ ʙʏ :</b> —🌿❤️`{user_name}`— [7G]"
+        f"<b>❍ Sᴛᴀʀᴛᴇᴅ Sᴛʀᴇᴀᴍɪɴɢ |</b>\n\n"
+        f"<b>‣ Tɪᴛʟᴇ :</b> <a href='{stream_url}'>{title}</a>\n"
+        f"<b>‣ Dᴜʀᴀᴛɪᴏɴ :</b> <code>{fmt_time(duration)} MINUTES</code>\n"
+        f"<b>‣ Rᴇǫᴜᴇsᴛᴇᴅ ʙʏ :</b> —🌿❤️`{user_name}`— [7G]"
     )
 
+    # Exact Photo Style (Row 2 mein 4 compact buttons)
     buttons = InlineKeyboardMarkup([
         [
-            # Row 1: Progress Bar Button
-            InlineKeyboardButton(text=f"{btn_prog}", callback_data="prog_update")
+            # Row 1: Progress Bar Button (10 blocks)
+            InlineKeyboardButton(text=btn_prog, callback_data="prog_update")
         ],
         [
-            # Row 2: 4 Buttons (Small Look)
+            # Row 2: 4 Buttons (Isse buttons baraber 'Small' dikhenge)
             InlineKeyboardButton("▷", callback_data="resume_cb"),
             InlineKeyboardButton("Ⅱ", callback_data="pause_cb"),
             InlineKeyboardButton("⏭", callback_data="skip_cb"),
@@ -387,10 +396,10 @@ async def play_cmd(_, msg: Message):
     await m.delete()
     
     # 6. SEND PHOTO AND START TIMER
-    # pmp capture karta hai message ki details timer update karne ke liye
+    # Sent message ko pmp capture kiya hai ID timer ko dene ke liye
     pmp = await bot.send_photo(chat_id, photo=thumb, caption=text, reply_markup=buttons)
     
-    # Timer start (har 10 second mein button update karega)
+    # Ye line progress bar timer ko background mein start kar degi
     asyncio.create_task(update_timer(chat_id, pmp.id, duration))
 
 

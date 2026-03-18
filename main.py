@@ -139,66 +139,7 @@ async def update_timer(chat_id, message_id, duration):
 
 # --- Global Level Variable ---
 
-@bot.on_message(filters.command("level"))
-async def set_boost_level(_, msg: Message):
-    global UKHI_LEVEL
-    if len(msg.command) < 2:
-        return await msg.reply("❌ **Level do (1-20)!**")
-    
-    try:
-        level = int(msg.command[1])
-        if 1 <= level <= 20:
-            UKHI_LEVEL = level
-            await msg.reply(f"🔊 **Ukhi Boost Level set to:** `{level}`\n⚡ *Ab /boost_on karke dekho!*")
-        else:
-            await msg.reply("❌ 1-20 range rakho!")
-    except:
-        await msg.reply("❌ Number do Brahh!")
 
-from pytgcalls.types.input_stream import AudioPiped, HighQualityAudio
-
-@bot.on_message(filters.command("boost_on"))
-async def start_boost(_, msg: Message):
-    chat_id = msg.chat.id
-    ukhi_filt = f"bass=g={UKHI_LEVEL*2},volume={UKHI_LEVEL},aecho=0.8:0.8:40:0.5"
-
-    try:
-        await msg.reply("🎤 **Assistant is now listening & boosting...**")
-        
-        # Sabse safe tareeka: Direct FFMPEG string pass karna
-        await call.join_group_call(
-            chat_id,
-            AudioPiped(
-                f"pulse", # Input source
-                HighQualityAudio(),
-                # Yahan hum 'additional_ffmpeg_parameters' try karenge
-                additional_ffmpeg_parameters=f"-af {ukhi_filt}" 
-            )
-        )
-    except Exception as e:
-        # AGAR PHIR BHI ERROR AAYE, TOH YE TRY KARO (Final Boss):
-        try:
-             await call.join_group_call(
-                chat_id,
-                AudioPiped(
-                    "pulse",
-                    HighQualityAudio()
-                    # Bina filters ke join karo pehle, check karne ke liye
-                )
-            )
-             await msg.reply("⚠️ **Note:** Filters support nahi ho rahe, par Assistant join ho gaya hai.")
-        except:
-            await msg.reply(f"❌ Error: {e}")
-
-
-
-@bot.on_message(filters.command("boost_off"))
-async def stop_boost(_, msg: Message):
-    try:
-        await call.leave_group_call(msg.chat.id)
-        await msg.reply("🔇 **Boost OFF!**")
-    except:
-        pass
 #WELCOME FUNCTION FOR USER WHO JOIN GROUP
 # --- Handler for new members ---
 # --- Updated Welcome Handler ---

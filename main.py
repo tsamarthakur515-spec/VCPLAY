@@ -35,6 +35,10 @@ def fmt_time(seconds: int) -> str:
 
 @bot.on_message(filters.command("ping"))
 async def ping_cmd(_, msg: Message):
+    try:
+        await message.delete()
+    except:
+        pass
     # 1. Sabse pehle loading message
     start_time = time.time()
     m = await msg.reply_text("📡 <code>Pinging...</code>")
@@ -73,6 +77,10 @@ async def ping_cmd(_, msg: Message):
 
 @bot.on_message(filters.command("start"))
 async def start_cmd(_, msg: Message):
+    try:
+        await message.delete()
+    except:
+        pass
     # Image URL (Aap apni pasand ki image link yahan daal sakte ho)
     START_IMG = "https://files.catbox.moe/uyum1c.jpg" 
     
@@ -121,6 +129,10 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 @bot.on_message(filters.command("play"))
 async def play_cmd(_, msg: Message):
+    try:
+        await message.delete()
+    except:
+        pass
     if len(msg.command) < 2:
         return await msg.reply("❌ Give a song name.\nEx: <code>/play mann mera</code>")
 
@@ -272,6 +284,10 @@ async def cb_handler(_, query):
 
 @bot.on_message(filters.command("stop"))
 async def stop_cmd(_, msg: Message):
+    try:
+        await message.delete()
+    except:
+        pass
     try:
         await call.leave_group_call(msg.chat.id)
         queues.pop(msg.chat.id, None)

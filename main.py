@@ -1,3 +1,4 @@
+import math
 import time
 import psutil
 from datetime import datetime, timedelta
@@ -27,10 +28,34 @@ call = PyTgCalls(assistant)
 BOT_START_TIME = datetime.now()
 queues = {}
 
-def fmt_time(seconds: int) -> str:
-    if seconds <= 0: return "00:00"
-    m, s = divmod(seconds, 60)
-    return f"{m}:{s:02d}"
+#MUSIC PLAYING TIMER
+def fmt_time(seconds):
+    if seconds <= 0:
+        return "00:00"
+    minutes, seconds = divmod(seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    if hours > 0:
+        return f"{hours:02}:{minutes:02}:{seconds:02}"
+    return f"{minutes:02}:{seconds:02}"
+#MUSIC PROGRESS BAR
+
+def gen_progressbar(total_sec, current_sec):
+    if total_sec == 0:
+        total_sec = 1 # ZeroDivisionError se bachne ke liye
+    percentage = (current_sec / total_sec) * 100
+    percentage = min(100, max(0, percentage)) # Percentage 0-100 ke beech rahe
+    
+    # Bar style (Total 10 blocks)
+    bar_length = 10
+    filled_blocks = math.floor(percentage / (100 / bar_length))
+    
+    # ▬▬▬▬▬▬▬ style bar
+    bar = "▬" * filled_blocks + "▬" + "▬" * (bar_length - filled_blocks)
+    
+    current_str = fmt_time(current_sec)
+    total_str = fmt_time(total_sec)
+    
+    return f"<code>{current_str}</code> {bar} <code>{total_str}</code>"
 
 
 @bot.on_message(filters.command("ping"))

@@ -84,6 +84,11 @@ async def start_cmd(_, msg: Message):
         await msg.delete() 
     except:
         pass
+
+    # Bot knamfo ek hi baar fetch kar lete hain performance ke liye
+    me = await bot.get_me()
+    bot_name = me.first_name
+    bot_username = me.username
     
     # ──────── ANIMATION START ────────
     # 1st Phase: HEY

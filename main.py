@@ -231,44 +231,63 @@ async def play_next(chat_id: int):
 
 
 
+# ───────────── CALLBACK HANDLER ─────────────
+
 @bot.on_callback_query()
 async def cb_handler(_, query):
     chat_id = query.message.chat.id
     data = query.data
 
-    if data == "pause_cb":
-        try:
-            await call.pause_stream(chat_id)
-            await query.answer("Paused ⏸", show_alert=False)
-        except:
-            await query.answer("Nothing is playing!", show_alert=True)
+    if data == "help_menu":
+        help_text = (
+            "<b>📖 <u>ʙᴏᴛ ʜᴇʟᴘ ᴍᴇɴᴜ</u></b>\n\n"
+            "🚀 <b>/play</b> [ꜱᴏɴɢ]  |  🛑 <b>/stop</b>\n"
+            "⏭ <b>/skip</b>  |  ⏸ <b>/pause</b>\n"
+            "▶️ <b>/resume</b>  |  📋 <b>/queue</b>\n"
+            "📡 <b>/ping</b> - Stats check"
+        )
+        # Back button compact
+        await query.message.edit_caption(
+            caption=help_text,
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ ʙᴀᴄᴋ", callback_data="back_to_start")]])
+        )
+
+    elif data == "repo_menu":
+        repo_text = (
+            "<b>📂 <u>ʀᴇᴘᴏsɪᴛᴏʀʏ ɪɴғᴏ</u></b>\n\n"
+            "✨ <b>Owner:</b> <a href='https://t.me/sxyaru'>sxyaru</a>\n"
+            "🛠 <b>Language:</b> Python\n\n"
+            "Custom music player build by sxyaru."
+        )
+        await query.message.edit_caption(
+            caption=repo_text,
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ ʙᴀᴄᴋ", callback_data="back_to_start")]])
+        )
+
+    elif data == "back_to_start":
+        text = (
+            "<b>╔══════════════════╗</b>\n"
+            "<b>   🎵 ᴍᴜsɪᴄ ᴘʟᴀʏᴇʀ ʙᴏᴛ 🎵   </b>\n"
+            "<b>╚══════════════════╝</b>\n\n"
+            "<b>👋 ʜᴇʟʟᴏ! ɪ ᴀᴍ ᴀ ғᴀsᴛ & ᴘᴏᴡᴇʀғᴜʟ</b>\n"
+            "<b>ᴠᴏɪᴄᴇ ᴄʜᴀᴛ ᴍᴜsɪᴄ ᴘʟᴀʏᴇʀ ʙᴏᴛ.</b>"
+        )
+        buttons = InlineKeyboardMarkup([
+            [InlineKeyboardButton("❓ ʜᴇʟᴘ", callback_data="help_menu"), InlineKeyboardButton("📂 ʀᴇᴘᴏ", callback_data="repo_menu")],
+            [InlineKeyboardButton("👤 ᴏᴡɴᴇʀ", url="https://t.me/sxyaru"), InlineKeyboardButton("📢 sᴜᴘᴘᴏʀᴛ", url="https://t.me/your_channel")],
+            [InlineKeyboardButton("➕ ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ", url=f"https://t.me/{bot.me.username}?startgroup=true")]
+        ])
+        await query.message.edit_caption(caption=text, reply_markup=buttons)
+
+    # Music Player Buttons (Compact Row)
+    # Jab /play karoge, tab ye buttons 1 hi line mein ayenge
+    elif data == "pause_cb":
+        try: await call.pause_stream(chat_id); await query.answer("Paused ⏸")
+        except: await query.answer("Nothing playing!", show_alert=True)
 
     elif data == "resume_cb":
-        try:
-            await call.resume_stream(chat_id)
-            await query.answer("Resumed ▶️", show_alert=False)
-        except:
-            await query.answer("Nothing is playing!", show_alert=True)
-
-    elif data == "skip_cb":
-        if chat_id not in queues or len(queues[chat_id]) <= 1:
-            try:
-                await call.leave_group_call(chat_id)
-                queues.pop(chat_id, None)
-                await query.message.delete()
-                await bot.send_message(chat_id, "⏭ **Skipped! Queue empty, leaving VC.**")
-            except:
-                await query.answer("Nothing to skip!", show_alert=True)
-        else:
-            queues[chat_id].pop(0)
-            await query.answer("Skipping to next... ⏭")
-            await play_next(chat_id)
-            # Naye gaane ki info update karna (Optional)
-            song = queues[chat_id][0]
-            await query.message.edit_caption(
-                f"🎵 **Now Playing Next**\n\n📝 **Song:** <code>{song['title']}</code>\n🎧 **By:** {song['by']}",
-                reply_markup=query.message.reply_markup
-            )
+        try: await call.resume_stream(chat_id); await query.answer("Resumed ▶️")
+        except: await query.answer("Nothing playing!", show_alert=True)
 
 
 

@@ -244,6 +244,10 @@ async def start_cmd(_, msg: Message):
 
 @bot.on_message(filters.command("play"))
 async def play_cmd(_, msg: Message):
+    try:
+        await message.delete()
+    except:
+        pass
     chat_id = msg.chat.id
     user_name = msg.from_user.first_name if msg.from_user else "User"
 

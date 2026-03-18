@@ -1,7 +1,5 @@
 import math
-import yt_dlp
-import time
-import random
+import mport random
 import psutil
 from datetime import datetime, timedelta
 import asyncio
@@ -19,7 +17,6 @@ from pytgcalls import PyTgCalls, StreamType
 from pytgcalls.types import AudioPiped, HighQualityAudio
 
 
-from pytgcalls.types import AudioVideoPiped, HighQualityAudio, LowQualityVideo
 # ───────────── CONFIG ─────────────
 API_ID = 33603336
 API_HASH = "c9683a8ec3b886c18219f650fc8ed429"
@@ -143,73 +140,6 @@ async def update_timer(chat_id, message_id, duration):
 
 #VIDEO PLAY FUNCTION
 
-@bot.on_message(filters.command("vplay"))
-async def vplay_cmd(_, msg: Message):
-    try:
-        await msg.delete()
-    except:
-        pass
-        
-    chat_id = msg.chat.id
-    user_name = msg.from_user.first_name if msg.from_user else "User"
-
-    if len(msg.command) < 2:
-        return await msg.reply("❌ **Video ka naam do!**\nExample: `/vplay t-series`")
-
-    query = msg.text.split(None, 1)[1].strip()
-    m = await msg.reply("🔎 <b>Searching Video...</b>")
-
-    # Micronode (0.5 CPU) ke liye ekdum light-weight options
-    ydl_opts = {
-        "format": "best[height<=360][ext=mp4]/best", # Kam resolution for 0.5 CPU
-        "quiet": True,
-        "default_search": "ytsearch1", # Ye pehla result utha lega bina extra library ke
-        "nocheckcertificate": True,
-    }
-
-    try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(query, download=False)
-            if not info or 'entries' not in info or not info['entries']:
-                return await m.edit("❌ Video nahi mili.")
-            
-            video = info['entries'][0]
-            stream_url = video['url']
-            title = video['title']
-            thumb = video['thumbnail']
-            duration = int(video.get('duration', 0))
-            video_url = f"https://www.youtube.com/watch?v={video['id']}"
-
-        # Assistant Join (Video Mode)
-        await call.join_group_call(
-            chat_id,
-            AudioVideoPiped(
-                stream_url,
-                HighQualityAudio(),
-                LowQualityVideo() # Micronode crash na ho isliye low quality
-            )
-        )
-        
-        await m.delete()
-        text = (
-            f"<b>🎬 Started Video Stream |</b>\n\n"
-            f"<b>‣ Title :</b> <a href='{video_url}'>{title[:30]}...</a>\n"
-            f"<b>‣ Requested by :</b> `{user_name}`"
-        )
-        
-        pmp = await bot.send_photo(
-            chat_id, 
-            photo=thumb, 
-            caption=text,
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("▢ Stop", callback_data="stop_cb")]])
-        )
-        
-        # Timer logic (Jo humne pehle fix kiya tha)
-        if duration > 0:
-            asyncio.create_task(update_timer(chat_id, pmp.id, duration))
-
-    except Exception as e:
-        await m.edit(f"❌ **Error:** `{e}`")
 
 # --- Global Level Variable ---
 

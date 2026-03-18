@@ -120,13 +120,51 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 @bot.on_message(filters.command("play"))
 async def play_cmd(_, msg: Message):
+    chat_id = msg.chat.id
+    
+    # 1. Pehle Assistant ki info nikalte hain
     try:
-        await msg.delete() # 'message' ko 'msg' kiya yahan
-    except:
-        pass
+        assistant_info = await assistant.get_me()
+        ast_id = assistant_info.id
+        ast_username = f"@{assistant_info.username}" if assistant_info.username else "Assistant"
+    except Exception as e:
+        return await msg.reply(f"❌ Assistant client start nahi hai: {e}")
 
+    # 2. Assistant Status Check
+    try:
+        ast_member = await bot.get_chat_member(chat_id, ast_id)
+        
+        # Agar Ban hai
+        if ast_member.status == "kicked":
+            return await msg.reply(
+                f"❌ **Assistant is Banned!**\n\n"
+                f"Pls unban the assistant from the group to play music.\n"
+                f"👤 **Name:** {assistant_info.first_name}\n"
+                f"🆔 **ID:** <code>{ast_id}</code>\n"
+                f"🔗 **Username:** {ast_username}"
+            )
+        
+        # Agar Admin nahi hai
+        if ast_member.status != "administrator":
+            return await msg.reply(
+                f"❌ **Assistant is not Admin!**\n\n"
+                f"Please make {ast_username} admin with 'Manage Video Chats' permission."
+            )
+
+    except Exception:
+        # Agar Assistant group mein nahi hai
+        m = await msg.reply("🔄 **Assistant is not in this group.**\n*Inviting Assistant to the group/vc...*")
+        try:
+            invitelink = await bot.export_chat_invite_link(chat_id)
+            await assistant.join_chat(invitelink)
+            await m.edit("✅ **Assistant Joined!** Now make it admin and try /play again.")
+            return
+        except Exception as e:
+            return await m.edit(f"❌ Auto-invite failed! Please add {ast_username} (ID: <code>{ast_id}</code>) manually.")
+
+    # 3. Agar sab sahi hai (Admin & Joined), tab Music Search shuru hoga
     if len(msg.command) < 2:
-        return await msg.reply("❌ **Song name toh do!**\nEx: <code>/play mann mera</code>")
+        return await msg.reply("❌ **Song name toh do!**\nEx: `/play mann mera`")
 
     query = msg.text.split(None, 1)[1].strip()
     m = await msg.reply("🔎 <b>Searching...</b>")
@@ -136,48 +174,31 @@ async def play_cmd(_, msg: Message):
             url = f"https://jio-saa-van.vercel.app/result/?query={quote(query)}"
             async with session.get(url, timeout=12) as r:
                 data = await r.json()
-    except Exception as ex:
-        return await m.edit(f"❌ API error: {ex.__class__.__name__}")
+    except Exception:
+        return await m.edit("❌ API Error!")
 
-    if not data or not isinstance(data, list) or len(data) == 0:
+    if not data or len(data) == 0:
         return await m.edit("❌ No results found.")
 
     track = data[0]
-    stream_url = track.get("media_url") or track.get("download_url")
-    if not stream_url:
-        return await m.edit("❌ No stream URL found.")
-
-    # Details Extraction
+    # Details extraction
     title = track.get("song", "Unknown")
-    artist = track.get("primary_artists") or track.get("singers", "Unknown")
+    artist = track.get("primary_artists") or "Unknown"
     duration = int(track.get("duration", 0))
-    # Aapka diya hua image link yahan fix kiya
-    thumb = "https://files.catbox.moe/uyum1c.jpg" 
-    
-    chat_id = msg.chat.id
-    requester = msg.from_user.first_name
+    stream_url = track.get("media_url") or track.get("download_url")
+    thumb = "https://files.catbox.moe/uyum1c.jpg"
 
     # Queue Logic
-    song_data = {
-        "title": title, 
-        "url": stream_url, 
-        "duration": duration, 
-        "by": requester,
-        "thumb": thumb
-    }
+    song_data = {"title": title, "url": stream_url, "duration": duration, "by": msg.from_user.first_name}
     queues.setdefault(chat_id, []).append(song_data)
 
-    # Compact Buttons (Ek hi row mein 3 buttons se size chhota dikhta hai)
+    # UI setup
     buttons = InlineKeyboardMarkup([
-        [
-            InlineKeyboardButton("⏸ Pᴀᴜsᴇ", callback_data="pause_cb"),
-            InlineKeyboardButton("▶️ Rᴇsᴜᴍᴇ", callback_data="resume_cb"),
-            InlineKeyboardButton("⏭ Sᴋɪᴘ", callback_data="skip_cb")
-        ],
-        [
-            InlineKeyboardButton("📢 Cʜᴀɴɴᴇʟ", url="https://t.me/your_channel"),
-            InlineKeyboardButton("👤 Oᴡɴᴇʀ", url="https://t.me/sxyaru")
-        ]
+        [InlineKeyboardButton("⏸ Pᴀᴜsᴇ", callback_data="pause_cb"),
+         InlineKeyboardButton("▶️ Rᴇsᴜᴍᴇ", callback_data="resume_cb"),
+         InlineKeyboardButton("⏭ Sᴋɪᴘ", callback_data="skip_cb")],
+        [InlineKeyboardButton("📢 Cʜᴀɴɴᴇʟ", url="https://t.me/your_channel"),
+         InlineKeyboardButton("👤 Oᴡɴᴇʀ", url="https://t.me/sxyaru")]
     ])
 
     text = (
@@ -185,28 +206,14 @@ async def play_cmd(_, msg: Message):
         f"📝 <b>Song:</b> <code>{title}</code>\n"
         f"👤 <b>Artist:</b> <code>{artist}</code>\n"
         f"⏳ <b>Duration:</b> <code>{fmt_time(duration)}</code>\n"
-        f"🎧 <b>By:</b> {requester}\n\n"
+        f"🎧 <b>By:</b> {msg.from_user.first_name}\n\n"
         f"<b>API By:</b> <a href='https://t.me/sxyaru'>sxyaru</a>"
     )
 
-    if len(queues[chat_id]) > 1:
-        await m.delete()
-        return await bot.send_photo(
-            chat_id, 
-            photo=thumb, 
-            caption=f"✅ <b>Queued at #{len(queues[chat_id])}</b>\n\n{text}",
-            reply_markup=buttons
-        )
-
     await m.delete()
-    await bot.send_photo(
-        chat_id, 
-        photo=thumb, 
-        caption=text,
-        reply_markup=buttons
-    )
-    
+    await bot.send_photo(chat_id, photo=thumb, caption=text, reply_markup=buttons)
     await play_next(chat_id)
+
 
 
 

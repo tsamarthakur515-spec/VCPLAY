@@ -121,11 +121,12 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 @bot.on_message(filters.command("play"))
 async def play_cmd(_, msg: Message):
     try:
-        await message.delete()
+        await msg.delete() # 'message' ko 'msg' kiya yahan
     except:
         pass
+
     if len(msg.command) < 2:
-        return await msg.reply("❌ Give a song name.\nEx: <code>/play mann mera</code>")
+        return await msg.reply("❌ **Song name toh do!**\nEx: <code>/play mann mera</code>")
 
     query = msg.text.split(None, 1)[1].strip()
     m = await msg.reply("🔎 <b>Searching...</b>")
@@ -150,7 +151,9 @@ async def play_cmd(_, msg: Message):
     title = track.get("song", "Unknown")
     artist = track.get("primary_artists") or track.get("singers", "Unknown")
     duration = int(track.get("duration", 0))
-    thumb = track.get("image") or "https://telegra.ph/file/default_music.jpg" # Default image agar na mile
+    # Aapka diya hua image link yahan fix kiya
+    thumb = "https://files.catbox.moe/uyum1c.jpg" 
+    
     chat_id = msg.chat.id
     requester = msg.from_user.first_name
 
@@ -164,16 +167,16 @@ async def play_cmd(_, msg: Message):
     }
     queues.setdefault(chat_id, []).append(song_data)
 
-    # Buttons Setup
+    # Compact Buttons (Ek hi row mein 3 buttons se size chhota dikhta hai)
     buttons = InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("⏸ Pause", callback_data="pause_cb"),
-            InlineKeyboardButton("▶️ Resume", callback_data="resume_cb"),
-            InlineKeyboardButton("⏭ Skip", callback_data="skip_cb")
+            InlineKeyboardButton("⏸ Pᴀᴜsᴇ", callback_data="pause_cb"),
+            InlineKeyboardButton("▶️ Rᴇsᴜᴍᴇ", callback_data="resume_cb"),
+            InlineKeyboardButton("⏭ Sᴋɪᴘ", callback_data="skip_cb")
         ],
         [
-            InlineKeyboardButton("📢 Channel", url="https://t.me/your_channel"), # Apna channel link dalein
-            InlineKeyboardButton("👤 Owner", url="https://t.me/sxyaru")
+            InlineKeyboardButton("📢 Cʜᴀɴɴᴇʟ", url="https://t.me/your_channel"),
+            InlineKeyboardButton("👤 Oᴡɴᴇʀ", url="https://t.me/sxyaru")
         ]
     ])
 
@@ -182,12 +185,11 @@ async def play_cmd(_, msg: Message):
         f"📝 <b>Song:</b> <code>{title}</code>\n"
         f"👤 <b>Artist:</b> <code>{artist}</code>\n"
         f"⏳ <b>Duration:</b> <code>{fmt_time(duration)}</code>\n"
-        f"🎧 <b>Requested by:</b> {requester}\n\n"
+        f"🎧 <b>By:</b> {requester}\n\n"
         f"<b>API By:</b> <a href='https://t.me/sxyaru'>sxyaru</a>"
     )
 
     if len(queues[chat_id]) > 1:
-        # Agar queue mein add hua hai toh photo ke saath reply karega
         await m.delete()
         return await bot.send_photo(
             chat_id, 
@@ -196,8 +198,7 @@ async def play_cmd(_, msg: Message):
             reply_markup=buttons
         )
 
-    # Play Next & Edit Message
-    await m.delete() # 'Searching' message delete karke photo bhejega
+    await m.delete()
     await bot.send_photo(
         chat_id, 
         photo=thumb, 
@@ -206,6 +207,7 @@ async def play_cmd(_, msg: Message):
     )
     
     await play_next(chat_id)
+
 
 
 async def play_next(chat_id: int):

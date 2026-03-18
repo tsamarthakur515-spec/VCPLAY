@@ -26,7 +26,6 @@ RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
 
 # Copy project
 COPY . .
-RUN chmod -R 777 /app
 
 # Upgrade pip
 RUN pip install --upgrade pip

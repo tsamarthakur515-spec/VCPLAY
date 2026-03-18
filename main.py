@@ -188,7 +188,7 @@ async def welcome_user(client, msg: Message):
 @bot.on_message(filters.command("ping"))
 async def ping_cmd(_, msg: Message):
     try:
-        await message.delete()
+        await msg.delete()
     except:
         pass
     # 1. Sabse pehle loading message
@@ -233,7 +233,7 @@ async def ping_cmd(_, msg: Message):
 async def start_cmd(_, msg: Message):
     # Pehle purana message delete karo (agar ho sake)
     try:
-        await msg.delete() 
+        await msg.delete()
     except:
         pass
 
@@ -297,7 +297,7 @@ async def start_cmd(_, msg: Message):
 @bot.on_message(filters.command("play"))
 async def play_cmd(_, msg: Message):
     try:
-        await message.delete()
+        await msg.delete()
     except:
         pass
     chat_id = msg.chat.id
@@ -580,7 +580,7 @@ async def cb_handler(_, query):
 @bot.on_message(filters.command("stop"))
 async def stop_cmd(_, msg: Message):
     try:
-        await message.delete()
+        await msg.delete()
     except:
         pass
     try:

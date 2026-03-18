@@ -70,23 +70,19 @@ def fmt_time(seconds):
     return f"{minutes:02}:{seconds:02}"
 #MUSIC PROGRESS BAR
 
-def gen_progressbar(total_sec, current_sec):
-    if total_sec == 0:
-        total_sec = 1 # ZeroDivisionError se bachne ke liye
+def gen_btn_progressbar(total_sec, current_sec):
+    if total_sec == 0: total_sec = 1
     percentage = (current_sec / total_sec) * 100
-    percentage = min(100, max(0, percentage)) # Percentage 0-100 ke beech rahe
+    percentage = min(100, max(0, percentage))
     
-    # Bar style (Total 10 blocks)
-    bar_length = 10
-    filled_blocks = math.floor(percentage / (100 / bar_length))
+    # Buttons chote hote hain toh bar 12-15 blocks ka rakhte hain
+    bar_length = 12
+    filled_blocks = int(percentage / (100 / bar_length))
     
-    # ▬▬▬▬▬▬▬ style bar
-    bar = "▬" * filled_blocks + "▬" + "▬" * (bar_length - filled_blocks)
+    # Image wala style (00:10 ▬▬▬●▬▬▬ 4:58)
+    bar = "▬" * filled_blocks + "●" + "▬" * (bar_length - filled_blocks)
     
-    current_str = fmt_time(current_sec)
-    total_str = fmt_time(total_sec)
-    
-    return f"<code>{current_str}</code> {bar} <code>{total_str}</code>"
+    return f"{fmt_time(current_sec)} {bar} {fmt_time(total_sec)}"
 
 
 #WELCOME FUNCTION FOR USER WHO JOIN GROUP

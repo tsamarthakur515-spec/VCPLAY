@@ -88,25 +88,30 @@ def gen_progressbar(total_sec, current_sec):
 
 #WELCOME FUNCTION FOR USER WHO JOIN GROUP
 # --- Handler for new members ---
-@bot.on_message(filters.new_chat_members)
-async def welcome_user(_, msg: Message):
+# --- Updated Welcome Handler ---
+@bot.on_message(filters.new_chat_members & filters.group)
+async def welcome_user(client, msg: Message):
+    # Debug ke liye print (Check karo terminal mein ye print ho raha hai ya nahi)
+    print(f"New member detected in: {msg.chat.title}")
+
     for user in msg.new_chat_members:
+        # Agar bot khud join kare toh welcome na kare
+        if user.is_self:
+            continue
+            
         try:
             name = user.first_name or "User"
             user_id = user.id
             chat_title = msg.chat.title
             
-            # Random image select karna
             photo = random.choice(WELCOME_IMAGES)
             
-            # Caption format karna
             caption = WELCOME_TEXT.format(
                 name=name, 
                 user_id=user_id, 
                 chat_title=chat_title
             )
 
-            # Buttons setup
             buttons = InlineKeyboardMarkup([
                 [
                     InlineKeyboardButton("• ᴄʜᴀɴɴᴇʟ •", url="https://t.me/suruchisupport"),
@@ -114,22 +119,20 @@ async def welcome_user(_, msg: Message):
                 ]
             ])
 
-            # Welcome message bhejna
-            wel_msg = await bot.send_photo(
-                msg.chat.id,
+            wel_msg = await client.send_photo(
+                chat_id=msg.chat.id,
                 photo=photo,
                 caption=caption,
                 reply_markup=buttons
             )
 
-            # 60 Seconds wait then delete
+            # 60 Seconds baad delete
             await asyncio.sleep(60)
             await wel_msg.delete()
 
-        except FloodWait as e:
-            await asyncio.sleep(e.value)
         except Exception as e:
             print(f"[WELCOME ERROR] {e}")
+
 
 
 @bot.on_message(filters.command("ping"))

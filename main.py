@@ -163,13 +163,12 @@ async def play_cmd(_, msg: Message):
     await play_next(chat_id)
 
 
-async def play_next(chat_id: int, msg: Message = None):
+async def play_next(chat_id: int):
     if chat_id not in queues or not queues[chat_id]:
         return
     
     song = queues[chat_id][0]
     try:
-        # Pehle join karne ki koshish karein
         try:
             await call.join_group_call(
                 chat_id,
@@ -177,24 +176,14 @@ async def play_next(chat_id: int, msg: Message = None):
                 stream_type=StreamType().pulse_stream
             )
         except Exception:
-            # Agar pehle se join hai, toh sirf stream change karein
             await call.change_stream(
                 chat_id,
                 AudioPiped(song["url"], HighQualityAudio())
             )
-            
-        text = f"🎵 **Now Playing:** {song['title']}\n👤 **Requested by:** {song['by']}"
-        if msg: 
-            await msg.edit(text)
-        else: 
-            await bot.send_message(chat_id, text)
-            
     except Exception as e:
-        print(f"Error details: {e}") # Terminal mein check karein
-        if msg: 
-            await msg.edit(f"❌ **Assistant join nahi kar pa raha!**\nError: `{e}`")
-        else:
-            await bot.send_message(chat_id, f"Error: {e}")
+        print(f"Error details: {e}")
+        await bot.send_message(chat_id, f"❌ **Assistant Error:** `{e}`")
+
 
 
 @bot.on_callback_query()

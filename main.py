@@ -1,4 +1,5 @@
 import math
+import yt_dlp
 import time
 import random
 import psutil
@@ -17,6 +18,9 @@ from pyrogram.enums import ChatMemberStatus # Ye line sabse upar imports mein ad
 from pytgcalls import PyTgCalls, StreamType
 from pytgcalls.types import AudioPiped, HighQualityAudio
 
+
+from yt_search_prow import YoutubeSearch
+from pytgcalls.types import AudioVideoPiped, HighQualityAudio, HighQualityVideo
 # ───────────── CONFIG ─────────────
 API_ID = 33603336
 API_HASH = "c9683a8ec3b886c18219f650fc8ed429"
@@ -138,8 +142,74 @@ async def update_timer(chat_id, message_id, duration):
 
 
 
-#BASE BOOST
+#VIDEO PLAY FUNCTION
 
+@bot.on_message(filters.command("vplay"))
+async def vplay_cmd(_, msg: Message):
+    try:
+        await msg.delete()
+    except:
+        pass
+        
+    chat_id = msg.chat.id
+    user_name = msg.from_user.first_name if msg.from_user else "User"
+
+    if len(msg.command) < 2:
+        return await msg.reply("❌ **Song/Video ka naam do!**\nExample: `/vplay t-series`")
+
+    query = msg.text.split(None, 1)[1].strip()
+    m = await msg.reply("🔎 <b>Searching Video on YouTube...</b>")
+
+    try:
+        # YouTube Search Logic
+        results = YoutubeSearch(query, max_results=1).to_dict()
+        if not results:
+            return await m.edit("❌ Video nahi mili.")
+        
+        video_url = f"https://www.youtube.com/watch?v={results[0]['id']}"
+        title = results[0]['title']
+        thumb = results[0]['thumbnails'][0]
+        duration = results[0]['duration'] # Format '5:30'
+
+        # Duration ko seconds mein badlo (Timer ke liye)
+        time_parts = list(map(int, duration.split(':')))
+        dur_seconds = time_parts[0] * 60 + time_parts[1] if len(time_parts) == 2 else time_parts[0]
+
+        # yt-dlp se Direct Stream Link nikalna
+        ydl_opts = {"format": "best[height<=480][ext=mp4]/best", "quiet": True}
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(video_url, download=False)
+            stream_url = info['url']
+
+        # Assistant Join Logic
+        await call.join_group_call(
+            chat_id,
+            AudioVideoPiped(
+                stream_url,
+                HighQualityAudio(),
+                HighQualityVideo() 
+            )
+        )
+        
+        await m.delete()
+        text = (
+            f"<b>🎬 Started Video Stream |</b>\n\n"
+            f"<b>‣ Title :</b> <a href='{video_url}'>{title}</a>\n"
+            f"<b>‣ Requested by :</b> `{user_name}`"
+        )
+        
+        pmp = await bot.send_photo(
+            chat_id, 
+            photo=thumb, 
+            caption=text,
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("▢ Stop", callback_data="stop_cb")]])
+        )
+        
+        # Timer logic
+        asyncio.create_task(update_timer(chat_id, pmp.id, dur_seconds))
+
+    except Exception as e:
+        await m.edit(f"❌ **Error:** `{e}`")
 # --- Global Level Variable ---
 
 

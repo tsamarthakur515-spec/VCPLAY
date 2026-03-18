@@ -331,7 +331,7 @@ async def play_cmd(_, msg: Message):
     if len(msg.command) < 2:
         return await msg.reply("❌ **ɢɪᴠᴇ ǫᴜᴇʀʏ!**")
 
-    query = msg.text.split(No 1)[1].strip()
+    query = msg.text.split(None, 1)[1].strip()
     m = await msg.reply("🔎 <b>sᴇᴀʀᴄʜɪɴɢ...</b>")
 
     try:
@@ -375,9 +375,10 @@ async def play_cmd(_, msg: Message):
         f"<b>❍ Sᴛᴀʀᴛᴇᴅ Sᴛʀᴇᴀᴍɪɴɢ |</b>\n\n"
         f"<b>‣ Tɪᴛʟᴇ :</b> <a href='{stream_url}'>{title}</a>\n"
         f"<b>‣ Dᴜʀᴀᴛɪᴏɴ :</b> <code>{fmt_time(duration)} ᴍs</code>\n"
-        f"<b>‣ Rᴇǫᴜᴇsᴛᴇᴅ ʙʏ :</b> `{user_name}`"\n
-        f"<b>‣ ʙᴏᴛ ʙᴀsᴇᴅ ᴏɴ : ᴀʀᴜ x ᴊɪᴏsᴀᴠᴀɴ</b"\n
-        f"<b>‣ ᴀᴘɪ ʙʏ:</b> <a href='https://t.me/sxyaru'>ᴀʀᴜ × ᴀᴘɪ [ʙᴏᴛs]</a>"
+        f"<b>‣ Rᴇǫᴜᴇsᴛᴇᴅ ʙʏ :</b> `{user_name}`\n"
+        f"<b>‣ ʙᴏᴛ ʙᴀsᴇᴅ ᴏɴ : ᴀʀᴜ x ᴊɪᴏsᴀᴠᴀɴ</b>\n"
+        f"<b>‣ ᴀᴘɪ ʙʏ: <a href='https://t.me/sxyaru'>ᴀʀᴜ × ᴀᴘɪ [ʙᴏᴛs]</a></b>\n"
+        f"<b>‣ ᴀᴘɪ ᴍᴀᴅᴇ ʙʏ: <a herf='href=https://t.me/ll_PANDA_BBY_ll'>ᴘᴀɴᴅᴀ-ʙᴀʙʏ</a></b>"
     )
 
     # Exact Photo Style (Row 2 mein 4 compact buttons)

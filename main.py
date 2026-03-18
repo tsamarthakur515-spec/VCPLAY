@@ -507,53 +507,45 @@ async def play_cmd(_, msg: Message):
 
 
 async def play_next(chat_id: int):
-    # 1. Check karo queue mein gaana hai ya nahi
+    global CURRENT_LEVEL
     if chat_id not in queues or not queues[chat_id]:
         return False
     
     song = queues[chat_id][0]
     url = song["url"]
 
+    # FFMPEG Filter logic
+    level_val = CURRENT_LEVEL * 2 
+    vol_val = 1.0 + (CURRENT_LEVEL * 0.5) 
+    filt = f"bass=g={level_val},volume={vol_val}"
+
     try:
-        # 2. Assistant ko join ya stream change karwana
+        # Hum 'filters' keyword hata kar direct try karenge
+        # Agar aapka version 2.0+ hai toh aise likho:
+        stream = AudioPiped(url, HighQualityAudio())
+        
+        # Ye line check karegi ki aapke version mein 'filters' hai ya nahi
+        # Agar nahi hai toh ye crash nahi hone dega
         try:
             await call.join_group_call(
                 chat_id,
-                AudioPiped(url, HighQualityAudio()),
+                AudioPiped(url, HighQualityAudio(), filters=filt), # Purana style
                 stream_type=StreamType().pulse_stream
             )
-        except Exception:
-            # Agar pehle se VC mein hai toh sirf stream badlo
-            await call.change_stream(
+        except TypeError: # Agar 'filters' keyword galat hai toh yahan aayega
+            await call.join_group_call(
                 chat_id,
-                AudioPiped(url, HighQualityAudio())
+                AudioPiped(url, HighQualityAudio()), # Bina filter ke
+                stream_type=StreamType().pulse_stream
             )
-        
-        # Agar yahan tak code pahuncha matlab SUCCESS!
+            # Yahan hum volume manually badhayenge agar filter kaam nahi kar raha
+            await call.set_volume_allowance(chat_id, int(vol_val * 100))
+
         return True
-            
     except Exception as e:
-        print(f"Assistant Join Error: {e}")
-        
-        # Error aane par queue se gaana hata do
-        if chat_id in queues:
-            queues[chat_id].pop(0)
-            
-        # Error message format
-        error_text = f"❌ **ᴘʟᴇᴀsᴇ ᴏɴ ᴛʜᴇ ᴠᴄ**\n\n"
-        
-        # Special check for VC not started
-        if "CHAT_ADMIN_REQUIRED" in str(e):
-            error_text += "💡 **Reason:** ᴀssɪsᴛᴀɴᴛ ʜᴀᴠᴇ ɴᴏ ᴘᴇʀᴍɪssɪᴏɴ ᴏғ ᴍᴀɴᴀɢᴇᴅ ᴠɪᴅᴇᴏ ᴄʜᴀᴛ."
-        elif "not in a group call" in str(e).lower() or "GROUP_CALL_NOT_MODIFIED" in str(e):
-            error_text += "💡 **Reason:** ғɪʀsᴛ sᴛᴀʀᴛ ᴛʜᴇ ᴠᴏɪᴄᴇ ᴄʜᴀᴛ ᴠᴄ!"
-        else:
-            error_text += f"💬 **Error:** <code>{e}</code>"
-            
-        await bot.send_message(chat_id, error_text)
-        
-        # Matlab FAILED!
+        print(f"Play Error: {e}")
         return False
+
 
 
 

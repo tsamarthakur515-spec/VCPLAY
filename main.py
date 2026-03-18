@@ -25,9 +25,12 @@ BOT_TOKEN = "8411080834:AAE85QH-LpaiOpht-RSMpwYQPus1jHONnu4"
 SESSION_STRING = "BQE-4i0ASxu8TXk4s870tFMn-D2Ijs-7DaTep8qcmRnZuowGYTiKDzzy9fKRT3pCc7aFI9oql0Rp5k1FkymDhRbewYPN11p5G7exMCs-z2bdMPuRoJCF60r7p_xq0TBjtLw5P1f-pXHHRxeXSAq0nKyNglv2pZ-GVCbYL4J-OwIkfck4wZyfiU0H58LZla5Il4VmVww-ewK3roa4mVjIxGKYoFva7LqYEf9Iti77jLz7HW7gCfuNessLDXqH1se4DuOSmoJzbacJxofENDQJChGjP4K7gbkMQQKwjCQfndvTmHLyDnc5jDqwfngZK1ogepmyiXZhhzHVebIieznK4DXTM1Q7pAAAAAHKarFXAA"
 # --- Random image links ---
 WELCOME_IMAGES = [
-    "https://files.catbox.moe/d8mnv9.jpg",
-    "https://files.catbox.moe/4d7s4u.jpg",
-    "https://files.catbox.moe/orqaah.jpg"
+    "https://files.catbox.moe/nacfzm.jpg",
+    "https://files.catbox.moe/x4lzbx.jpg",
+    "https://files.catbox.moe/g6cmb2.jpg",
+    "https://files.catbox.moe/3hxb96.jpg",
+    "https://files.catbox.moe/3h3vqz.jpg",
+    "https://files.catbox.moe/yah7a9.jpg"
 ]
 # --- Welcome message template ---
 WELCOME_TEXT = """🌸✨ ──────────────────── ✨🌸  

@@ -225,7 +225,7 @@ async def play_next(chat_id: int):
     url = song["url"]
 
     try:
-        # Check if Assistant is already in call
+        # Assistant join karne ki koshish karega
         try:
             await call.join_group_call(
                 chat_id,
@@ -233,7 +233,7 @@ async def play_next(chat_id: int):
                 stream_type=StreamType().pulse_stream
             )
         except Exception:
-            # If already joined, just change the stream
+            # Agar Assistant pehle se VC mein hai toh sirf gaana change hoga
             await call.change_stream(
                 chat_id,
                 AudioPiped(url, HighQualityAudio())
@@ -241,10 +241,19 @@ async def play_next(chat_id: int):
             
     except Exception as e:
         print(f"Assistant Join Error: {e}")
-        # Agar error aaye toh queue se hata do taki bot stuck na ho
+        
+        # Queue se gaana hatao taaki loop na bane
         if chat_id in queues:
             queues[chat_id].pop(0)
-        await bot.send_message(chat_id, f"❌ **Assistant join nahi kar pa raha!**\n`{e}`")
+            
+        # Sahi error message dikhane ke liye
+        error_text = f"❌ **Assistant join nahi kar pa raha!**\n\n"
+        if "CHAT_ADMIN_REQUIRED" in str(e):
+            error_text += "💡 **Reason:** Assistant ke paas 'Manage Video Chats' permission nahi hai."
+        else:
+            error_text += f"💬 **Error:** `{e}`"
+            
+        await bot.send_message(chat_id, error_text)
 
 
 

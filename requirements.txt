@@ -1,6 +1,5 @@
 aiohttp
 pyrogram==2.0.106
 tgcrypto
-yt-dlp
-py-tgcalls==2.0.11
+py-tgcalls==0.9.7
 

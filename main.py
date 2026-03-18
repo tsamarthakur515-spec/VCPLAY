@@ -88,47 +88,52 @@ def gen_btn_progressbar(total_sec, current_sec):
 async def update_timer(chat_id, message_id, duration):
     current_time = 0
     while current_time < duration:
-        # Har 15 second mein update safe hai limit se bachne ke liye
-        await asyncio.sleep(15)
-        current_time += 15
+        await asyncio.sleep(10) # 10 sec ka gap perfect hai
         
-        # Check if chat still playing
+        # Check karo agar music stop ho gaya ya queue khali ho gayi
         if chat_id not in queues:
             break
             
+        # Agar music paused hai, toh timer mat badhao
+        # (Iske liye aapko ek 'is_paused' variable ya check chahiye hoga)
+        # Abhi ke liye hum simple increment kar rahe hain:
+        current_time += 10
+
+        # Sabse bada FIX: Agar current_time duration se upar nikal jaye
+        if current_time >= duration:
+            current_time = duration # Full bar dikhao aur loop khatam karo
+
         new_prog = gen_btn_progressbar(duration, current_time)
         
-        # New buttons jisme timer update hua hai (BAAKI SAME)
-        new_buttons = InlineKeyboardMarkup([
-            [InlineKeyboardButton(text=new_prog, callback_data="prog_update")],
-            [
-                InlineKeyboardButton("▷", callback_data="resume_cb"),
-                InlineKeyboardButton("Ⅱ", callback_data="pause_cb"),
-                InlineKeyboardButton("⏭", callback_data="skip_cb"),
-                InlineKeyboardButton("▢", callback_data="stop_cb")
-            ],
-            [
-                InlineKeyboardButton("⏮ -20s", callback_data="seek_back"),
-                InlineKeyboardButton("↺", callback_data="replay_cb"),
-                InlineKeyboardButton("+20s ⏭", callback_data="seek_forward")
-            ],
-            [
-                InlineKeyboardButton("ᴏᴡɴᴇʀ↗", url="https://t.me/ll_PANDA_BBY_ll"),
-                InlineKeyboardButton("sᴜᴘᴘᴏʀᴛ ↗", url="https://t.me/sxyaru")
-            ]
-        ])
-        
         try:
-            # SIRF BUTTONS EDIT KAREINGE (Caption nahi badlega)
-            # Yahan hum main 'bot' instance use kar rahe hain
             await bot.edit_message_reply_markup(
                 chat_id,
                 message_id,
-                reply_markup=new_buttons
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton(text=new_prog, callback_data="prog_update")],
+                    [
+                        InlineKeyboardButton("▷", callback_data="resume_cb"),
+                        InlineKeyboardButton("Ⅱ", callback_data="pause_cb"),
+                        InlineKeyboardButton("⏭", callback_data="skip_cb"),
+                        InlineKeyboardButton("▢", callback_data="stop_cb")
+                    ],
+                    [
+                        InlineKeyboardButton("⏮ -20s", callback_data="seek_back"),
+                        InlineKeyboardButton("↺", callback_data="replay_cb"),
+                        InlineKeyboardButton("+20s ⏭", callback_data="seek_forward")
+                    ],
+                    [
+                        InlineKeyboardButton("ᴏᴡɴᴇʀ↗", url="https://t.me/ll_PANDA_BBY_ll"),
+                        InlineKeyboardButton("sᴜᴘᴘᴏʀᴛ ↗", url="https://t.me/sxyaru")
+                    ]
+                ])
             )
+            # Agar gaana khatam ho gaya toh loop exit kar do
+            if current_time >= duration:
+                break
         except Exception:
-            # Message delete ho gaya ya koi aur issue
             break
+
 
 
 #WELCOME FUNCTION FOR USER WHO JOIN GROUP
@@ -291,6 +296,10 @@ async def start_cmd(_, msg: Message):
 # --- Ye aapka Updated Play Command hai ---
 @bot.on_message(filters.command("play"))
 async def play_cmd(_, msg: Message):
+    try:
+        await message.delete()
+    except:
+        pass
     chat_id = msg.chat.id
     user_name = msg.from_user.first_name if msg.from_user else "User"
 
@@ -303,27 +312,27 @@ async def play_cmd(_, msg: Message):
         try:
             ast_member = await bot.get_chat_member(chat_id, ast_id)
             if ast_member.status == ChatMemberStatus.BANNED:
-                return await msg.reply(f"❌ **Assistant is Banned!**\nPls unban {ast_username} (ID: <code>{ast_id}</code>)")
+                return await msg.reply(f"❌ **ᴀssɪsᴛᴀɴᴛ ɪs ʙᴀɴ!**\nᴘʟs ᴜɴʙᴀɴ {ast_username} (ɪᴅ: <code>{ast_id}</code>)")
             if ast_member.status not in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
-                return await msg.reply(f"❌ **Assistant is not Admin!**\nMake {ast_username} admin with 'Manage Video Chats' permission.")
+                return await msg.reply(f"❌ **ᴀssɪsᴛᴀɴᴛ ɪs ɴᴏᴛ ᴀɴ ᴀᴅᴍɪɴ!**\nᴍᴀᴋᴇ {ast_username} ᴀs ᴀᴅᴍɪɴ ᴛᴏ ᴍᴀɴᴀɢᴇ ᴛʜᴇ ᴠᴏɪᴄᴇ ᴄʜᴀᴛ ")
         except Exception as e:
             if "USER_NOT_PARTICIPANT" in str(e):
-                m = await msg.reply(f"🔄 **Inviting Assistant to the group...**")
+                m = await msg.reply(f"🔄 **ɪɴᴠɪᴛɪɴɢ ᴀssɪsᴛᴀɴᴛ ᴛᴏ ɢʀᴏᴜᴘ...**")
                 try:
                     invitelink = await bot.export_chat_invite_link(chat_id)
                     await assistant.join_chat(invitelink)
-                    return await m.edit(f"✅ **Assistant Joined!**\nAb use admin banao aur `/play` karo.")
-                except: return await m.edit("❌ Auto-invite failed! Assistant ko manually add karo.")
+                    return await m.edit(f"✅ **ᴀssɪsᴛᴀɴᴛ ᴊᴏɪɴᴇᴅ ᴛʜᴇ ɢʀᴏᴜᴘ ᴍᴀᴋᴇ ᴀᴅᴍɪɴ ᴛʜᴇɴ /play**")
+                except: return await m.edit("❌ ᴀᴜᴛᴏ ɪɴᴠɪᴛɪɴɢ ғᴀɪʟᴇᴅ ᴀᴅᴅ ᴛʜᴇ ᴀssɪsᴛᴀɴᴛ ᴍᴀɴᴜᴀʟʟʏ")
             pass
     except Exception as e:
         return await msg.reply(f"❌ Assistant Error: {e}")
 
     # 2. Search Logic
     if len(msg.command) < 2:
-        return await msg.reply("❌ **Song name toh do!**")
+        return await msg.reply("❌ **ɢɪᴠᴇ ǫᴜᴇʀʏ!**")
 
     query = msg.text.split(None, 1)[1].strip()
-    m = await msg.reply("🔎 <b>Searching...</b>")
+    m = await msg.reply("🔎 <b>sᴇᴀʀᴄʜɪɴɢ...</b>")
 
     try:
         async with aiohttp.ClientSession() as session:
@@ -365,8 +374,8 @@ async def play_cmd(_, msg: Message):
     text = (
         f"<b>❍ Sᴛᴀʀᴛᴇᴅ Sᴛʀᴇᴀᴍɪɴɢ |</b>\n\n"
         f"<b>‣ Tɪᴛʟᴇ :</b> <a href='{stream_url}'>{title}</a>\n"
-        f"<b>‣ Dᴜʀᴀᴛɪᴏɴ :</b> <code>{fmt_time(duration)} MINUTES</code>\n"
-        f"<b>‣ Rᴇǫᴜᴇsᴛᴇᴅ ʙʏ :</b> —🌿❤️`{user_name}`— [7G]"
+        f"<b>‣ Dᴜʀᴀᴛɪᴏɴ :</b> <code>{fmt_time(duration)} ᴍs</code>\n"
+        f"<b>‣ Rᴇǫᴜᴇsᴛᴇᴅ ʙʏ :</b> `{user_name}`"
     )
 
     # Exact Photo Style (Row 2 mein 4 compact buttons)

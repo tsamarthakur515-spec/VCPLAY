@@ -73,7 +73,49 @@ async def ping_cmd(_, msg: Message):
 
 @bot.on_message(filters.command("start"))
 async def start_cmd(_, msg: Message):
-    await msg.reply_text("<b>🎶 Music Bot is Alive!</b>\nUse /play [song name] to start.")
+    # Image URL (Aap apni pasand ki image link yahan daal sakte ho)
+    START_IMG = "https://telegra.ph/file/your_cool_music_image.jpg" 
+    
+    # Stylish Caption
+    text = (
+        "<b>╔══════════════════╗</b>\n"
+        "<b>   🎵 ᴍᴜsɪᴄ ᴘʟᴀʏᴇʀ ʙᴏᴛ 🎵   </b>\n"
+        "<b>╚══════════════════╝</b>\n\n"
+        "<b>👋 ʜᴇʟʟᴏ! ɪ ᴀᴍ ᴀ ғᴀsᴛ & ᴘᴏᴡᴇʀғᴜʟ</b>\n"
+        "<b>ᴠᴏɪᴄᴇ ᴄʜᴀᴛ ᴍᴜsɪᴄ ᴘʟᴀʏᴇʀ ʙᴏᴛ.</b>\n\n"
+        "📌 <b><u>ᴄᴏᴍᴍᴀɴᴅs:</u></b>\n"
+        "🚀 <b>/play [ꜱᴏɴɢ ɴᴀᴍᴇ] - ᴘʟᴀʏ ᴍᴜsɪᴄ</b>\n"
+        "🛑 <b>/stop - sᴛᴏᴘ & ʟᴇᴀᴠᴇ ᴠᴄ</b>\n"
+        "⏭ <b>/skip - sᴋɪᴘ ᴛᴏ ɴᴇxᴛ ꜱᴏɴɢ</b>\n"
+        "📡 <b>/ping - ᴄʜᴇᴄᴋ ʙᴏᴛ sᴛᴀᴛs</b>\n\n"
+        "✨ <b>ᴍᴀᴅᴇ ᴡɪᴛʜ ❤️ ʙʏ:</b> <a href='https://t.me/sxyaru'>sxyaru</a>"
+    )
+
+    # Buttons Setup
+    buttons = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("👤 ᴏᴡɴᴇʀ", url="https://t.me/sxyaru"),
+            InlineKeyboardButton("📢 sᴜᴘᴘᴏʀᴛ", url="https://t.me/your_channel") # Apna channel link yahan daalein
+        ],
+        [
+            InlineKeyboardButton("➕ ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ", url=f"https://t.me/{bot.me.username}?startgroup=true")
+        ]
+    ])
+
+    try:
+        # Photo ke saath bhejega
+        await msg.reply_photo(
+            photo=START_IMG,
+            caption=text,
+            reply_markup=buttons
+        )
+    except Exception:
+        # Agar photo fail ho jaye toh text bhejega
+        await msg.reply_text(
+            text=text,
+            reply_markup=buttons,
+            disable_web_page_preview=True
+        )
 
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 

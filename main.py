@@ -299,16 +299,14 @@ async def play_cmd(_, msg: Message):
     queues.setdefault(chat_id, []).append(song_data)
 
     # 4. 🔥 CRITICAL STEP: TRY JOINING FIRST 🔥
-    # Hum pehle play_next ko call karenge aur check karenge success hua ya nahi
     success = await play_next(chat_id)
 
     if not success:
-        # Agar join fail hua (VC off hai), toh menu mat dikhao
         await m.delete()
         return
 
     # 5. UI Layout (Success hone par hi dikhega)
-    btn_prog = gen_btn_progressbar(duration, 0) # Button wala progress bar
+    btn_prog = gen_btn_progressbar(duration, 0) 
     
     text = (
         f"<b>⭮ Sᴛᴀʀᴛᴇᴅ Sᴛʀᴇᴀᴍɪɴɢ |</b>\n\n"
@@ -318,32 +316,33 @@ async def play_cmd(_, msg: Message):
     )
 
     buttons = InlineKeyboardMarkup([
+        [InlineKeyboardButton(text=f"{btn_prog}", callback_data="prog_update")],
         [
-        # Progress Bar Button (Row 1)
-        InlineKeyboardButton(text=f"{btn_prog}", callback_data="prog_update")
-    ],
-    [
-        # Row 2: 4 Buttons (Isse buttons automatically chote ho jayenge)
-        InlineKeyboardButton("▷", callback_data="resume_cb"),
-        InlineKeyboardButton("Ⅱ", callback_data="pause_cb"),
-        InlineKeyboardButton("⏭", callback_data="skip_cb"),
-        InlineKeyboardButton("▢", callback_data="stop_cb")
-    ],
-    [
-        # Row 3: 3 Buttons
-        InlineKeyboardButton("⏮ -20s", callback_data="seek_back"),
-        InlineKeyboardButton("↺", callback_data="replay_cb"),
-        InlineKeyboardButton("+20s ⏭", callback_data="seek_forward")
-    ],
-    [
-        # Row 4: 2 Buttons
-        InlineKeyboardButton("HELP ↗", callback_data="help_menu"),
-        InlineKeyboardButton("SUPPORT ↗", url="https://t.me/your_channel")
-    ]
-])
+            InlineKeyboardButton("▷", callback_data="resume_cb"),
+            InlineKeyboardButton("Ⅱ", callback_data="pause_cb"),
+            InlineKeyboardButton("⏭", callback_data="skip_cb"),
+            InlineKeyboardButton("▢", callback_data="stop_cb")
+        ],
+        [
+            InlineKeyboardButton("⏮ -20s", callback_data="seek_back"),
+            InlineKeyboardButton("↺", callback_data="replay_cb"),
+            InlineKeyboardButton("+20s ⏭", callback_data="seek_forward")
+        ],
+        [
+            InlineKeyboardButton("HELP ↗", callback_data="help_menu"),
+            InlineKeyboardButton("SUPPORT ↗", url="https://t.me/your_channel")
+        ]
+    ])
 
     await m.delete()
-    await bot.send_photo(chat_id, photo=thumb, caption=text, reply_markup=buttons)
+    
+    # 6. SEND PHOTO AND START TIMER TASK
+    # Sent message ko capture kar rahe hain taaki ID timer ko de sakein
+    pmp = await bot.send_photo(chat_id, photo=thumb, caption=text, reply_markup=buttons)
+    
+    # Ye line timer ko background mein start kar degi
+    asyncio.create_task(update_timer(chat_id, pmp.id, duration))
+
 
 
 

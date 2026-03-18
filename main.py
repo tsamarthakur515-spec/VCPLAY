@@ -68,18 +68,20 @@ def fmt_time(seconds):
     return f"{minutes:02}:{seconds:02}"
 
 def gen_btn_progressbar(total_sec, current_sec):
+    # Pehle bar_length 12-15 thi, ab 6-8 karke dekho
+    bar_length = 8 
+    
     if total_sec == 0: total_sec = 1
     percentage = (current_sec / total_sec) * 100
     percentage = min(100, max(0, percentage))
     
-    # 12 blocks for better fit
-    bar_length = 12
     filled_blocks = int(percentage / (100 / bar_length))
     
-    # Text wale progress bar ki jagah, hum simple blocks use karenge
-    bar = "▬" * filled_blocks + "▬" + "▬" * (bar_length - filled_blocks)
+    # Dot wala style (Image match)
+    bar = "▬" * filled_blocks + "●" + "▬" * (bar_length - filled_blocks)
     
     return f"{fmt_time(current_sec)} {bar} {fmt_time(total_sec)}"
+
 
 # TIMER LOOPER (Ye background mein chalega)
 # Humein queues aur call variables yahan chahiye honge

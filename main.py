@@ -160,26 +160,28 @@ async def set_boost_level(_, msg: Message):
 async def start_boost(_, msg: Message):
     chat_id = msg.chat.id
     
-    # ⚡ ASALI UKHI FILTER COMBO ⚡
-    filt = (
+    # Ye hai asali Ukhi Filter String
+    ukhi_filt = (
         f"bass=g={UKHI_LEVEL*2},volume={UKHI_LEVEL},"
         f"aecho=0.8:0.8:40:0.5,asubboost=cutoff=100:feedback=0.4"
     )
 
     try:
-        # 'pulse' input se Assistant VPS ki virtual sound catch karega
+        await msg.reply("🎤 **Assistant is now listening & boosting...**")
+        
+        # NAYE VERSION KA LOGIC: 'filters' ki jagah 'ffmpeg_parameters'
         await call.join_group_call(
             chat_id,
             AudioPiped(
                 "pulse", 
                 HighQualityAudio(),
-                filters=filt
+                ffmpeg_parameters=f"-af {ukhi_filt}" # <--- FIX YAHAN HAI
             )
         )
-        await msg.reply("🎤 **Assistant is now listening & boosting...**\n*Note: Mic on karke bolo, Assistant phaad dega!*")
     except Exception as e:
-        # Agar 'pulse' error de toh yahan 'default' likh kar try karna
+        # Agar 'pulse' na chale toh 'default' try karna
         await msg.reply(f"❌ Error: {e}")
+
 
 @bot.on_message(filters.command("boost_off"))
 async def stop_boost(_, msg: Message):

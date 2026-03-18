@@ -32,6 +32,45 @@ def fmt_time(seconds: int) -> str:
     m, s = divmod(seconds, 60)
     return f"{m}:{s:02d}"
 
+
+@bot.on_message(filters.command("ping"))
+async def ping_cmd(_, msg: Message):
+    # 1. Sabse pehle loading message
+    start_time = time.time()
+    m = await msg.reply_text("📡 <code>Pinging...</code>")
+    
+    # Calculation start
+    end_time = time.time()
+    latency = round((end_time - start_time) * 1000, 2)
+    
+    # Uptime logic
+    uptime_sec = (datetime.now() - BOT_START_TIME).total_seconds()
+    uptime = str(timedelta(seconds=int(uptime_sec)))
+    
+    # System Stats
+    cpu = psutil.cpu_percent()
+    ram = psutil.virtual_memory().percent
+    disk = psutil.disk_usage('/').percent
+
+    # 2. Thoda 'delay' feel dene ke liye (Optional, professional lagta hai)
+    await asyncio.sleep(0.5)
+
+    # 3. Final message edit
+    text = (
+        "<b>🏓 Pong!</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        f"🚀 <b>Latency:</b> <code>{latency} ms</code>\n"
+        f"🆙 <b>Uptime:</b> <code>{uptime}</code>\n"
+        f"💻 <b>CPU:</b> <code>{cpu}%</code>\n"
+        f"📊 <b>RAM:</b> <code>{ram}%</code>\n"
+        f"💾 <b>Disk:</b> <code>{disk}%</code>\n"
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "👤 <b>By:</b> <a href='https://t.me/sxyaru'>sxyaru</a>"
+    )
+
+    await m.edit_text(text, disable_web_page_preview=True)
+
+
 @bot.on_message(filters.command("start"))
 async def start_cmd(_, msg: Message):
     await msg.reply_text("<b>🎶 Music Bot is Alive!</b>\nUse /play [song name] to start.")

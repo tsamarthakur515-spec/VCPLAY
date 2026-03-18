@@ -9,7 +9,7 @@ from pyrogram import Client, filters, idle
 from pyrogram.enums import ParseMode
 from pyrogram.types import Message
 from pyrogram.errors import PeerIdInvalid, ChannelInvalid
-
+from pyrogram.enums import ChatMemberStatus # Ye line sabse upar imports mein add kar dena
 from pytgcalls import PyTgCalls, StreamType
 from pytgcalls.types.input_stream import AudioPiped
 from pytgcalls.types.input_stream.quality import HighQualityAudio
@@ -142,11 +142,13 @@ async def start_cmd(_, msg: Message):
 
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
+from pyrogram.enums import ChatMemberStatus # Ye line sabse upar imports mein add kar dena
+
 @bot.on_message(filters.command("play"))
 async def play_cmd(_, msg: Message):
     chat_id = msg.chat.id
     
-    # 1. Pehle Assistant ki info nikalte hain
+    # 1. Assistant ki info
     try:
         assistant_info = await assistant.get_me()
         ast_id = assistant_info.id
@@ -154,39 +156,43 @@ async def play_cmd(_, msg: Message):
     except Exception as e:
         return await msg.reply(f"❌ Assistant client start nahi hai: {e}")
 
-    # 2. Assistant Status Check
+    # 2. Advanced Assistant Status Check
     try:
         ast_member = await bot.get_chat_member(chat_id, ast_id)
         
-        # Agar Ban hai
-        if ast_member.status == "kicked":
+        # Check if Banned
+        if ast_member.status == ChatMemberStatus.BANNED:
             return await msg.reply(
                 f"❌ **Assistant is Banned!**\n\n"
-                f"Pls unban the assistant from the group to play music.\n"
+                f"Pls unban the assistant from the group.\n"
                 f"👤 **Name:** {assistant_info.first_name}\n"
-                f"🆔 **ID:** <code>{ast_id}</code>\n"
-                f"🔗 **Username:** {ast_username}"
+                f"🆔 **ID:** <code>{ast_id}</code>"
             )
         
-        # Agar Admin nahi hai
-        if ast_member.status != "administrator":
+        # Admin check with Bypass logic
+        # Agar Assistant Admin ya Owner nahi hai toh hi error dega
+        if ast_member.status not in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
             return await msg.reply(
                 f"❌ **Assistant is not Admin!**\n\n"
                 f"Please make {ast_username} admin with 'Manage Video Chats' permission."
             )
 
-    except Exception:
-        # Agar Assistant group mein nahi hai
-        m = await msg.reply("🔄 **Assistant is not in this group.**\n*Inviting Assistant to the group/vc...*")
-        try:
-            invitelink = await bot.export_chat_invite_link(chat_id)
-            await assistant.join_chat(invitelink)
-            await m.edit("✅ **Assistant Joined!** Now make it admin and try /play again.")
-            return
-        except Exception as e:
-            return await m.edit(f"❌ Auto-invite failed! Please add {ast_username} (ID: <code>{ast_id}</code>) manually.")
+    except Exception as e:
+        # Agar Assistant group mein nahi hai (Error: User not participant)
+        if "USER_NOT_PARTICIPANT" in str(e):
+            m = await msg.reply("🔄 **Assistant is not in this group.**\n*Inviting Assistant...*")
+            try:
+                invitelink = await bot.export_chat_invite_link(chat_id)
+                await assistant.join_chat(invitelink)
+                await m.edit(f"✅ **Assistant Joined!**\nAb use admin banao aur `/play` karo.")
+                return
+            except Exception:
+                return await m.edit(f"❌ Auto-invite failed! Add {ast_username} (ID: <code>{ast_id}</code>) manually.")
+        else:
+            # Agar koi aur random API error hai, toh hum assume karenge ki Assistant admin hai (Bypass)
+            pass
 
-    # 3. Agar sab sahi hai (Admin & Joined), tab Music Search shuru hoga
+    # 3. Music Logic (Agar checks pass ho gaye)
     if len(msg.command) < 2:
         return await msg.reply("❌ **Song name toh do!**\nEx: `/play mann mera`")
 
@@ -205,7 +211,6 @@ async def play_cmd(_, msg: Message):
         return await m.edit("❌ No results found.")
 
     track = data[0]
-    # Details extraction
     title = track.get("song", "Unknown")
     artist = track.get("primary_artists") or "Unknown"
     duration = int(track.get("duration", 0))
